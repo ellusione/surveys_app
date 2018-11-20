@@ -1,4 +1,7 @@
 import Sequelize from 'sequelize'
+import {dbOptions} from './database'
+import * as Member from './member'
+import * as Survey from './survey'
 
 export const tableName = 'organizations'
 
@@ -14,9 +17,36 @@ const Attributes = {
     name: {type: Sequelize.STRING, allowNull: false}
 }
 
-export default (sequelize: Sequelize.Sequelize) => {
+export default (
+    sequelize: Sequelize.Sequelize, 
+    memberModel: Sequelize.Model<Member.Instance, Member.Attributes>,
+    surveyModel: Sequelize.Model<Survey.Instance, Survey.Attributes>
+) => {
+    const options = Object.assign({}, dbOptions, {
+        hooks: {
+            //todo make a worker
+            afterDelete: (organization: Instance) => {
+                if (!organization.id) {
+                    throw new Error('no id on organization') //fixme
+                }
+
+                memberModel.destroy({
+                    where: {
+                        organization_id: organization.id
+                    }
+                })
+
+                surveyModel.destroy({
+                    where: {
+                        organization_id: organization.id
+                    }
+                })
+            }
+        }
+    })
+
     const model =  sequelize.define<Instance, Attributes>(
-        tableName, Attributes
+        tableName, Attributes, options 
     )
 
     model.associate = models => {

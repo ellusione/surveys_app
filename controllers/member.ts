@@ -7,6 +7,35 @@ import {Role} from '../roles'
 
 export default function initMembersController(app: Express.Express, modelsFactory: ModelsFactory) {
 
+    app.post('members', [
+        Validator.body('user_id').isInt({gt: 0}),
+        Validator.body('organization_id').isInt({gt: 0}),
+        Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+
+        const user = await modelsFactory.userModel.findById(req.body.user_id)
+
+        if (!user) {
+            return res.status(404).send('User not found')
+        }
+
+        const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
+
+        if (!organization) {
+            return res.status(404).send('Organization not found')
+        }
+
+        const result = await modelsFactory.memberModel.create({
+            user_id: req.body.user_id, 
+            organization_id: req.body.organization_id,
+            role_id: req.body.role_id
+        })
+
+        return res.status(200).send(result)
+    })
+    
     app.get('/members', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
@@ -58,20 +87,22 @@ export default function initMembersController(app: Express.Express, modelsFactor
 
         return res.status(200).send(result)
     })
-    
-    app.post('members', [
-        Validator.body('user_id').isInt({gt: 0}),
-        Validator.body('organization_id').isInt({gt: 0}),
-        Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+
+    app.delete('/members/:member_id', [
+        Validator.param('member_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
-        const result = await modelsFactory.memberModel.create({
-            user_id: req.body.user_id, 
-            organization_id: req.body.organization_id,
-            role_id: req.body.role_id
+        const result = await modelsFactory.memberModel.destroy({
+            where: {
+                id: req.params.member_id
+            }
         })
 
-        return res.status(200).send(result)
+        if (result === 1) {
+            return res.status(200)
+        }
+
+        return res.status(404)
     })
 }

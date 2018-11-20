@@ -26,13 +26,13 @@ export default class ModelsFactory {
                 throw err
             })
             .then((sequelize) => {
-                this.surveyModel = Survey.default(sequelize)
-                this.userModel = User.default(sequelize)
                 this.memberModel = Member.default(sequelize)
-                this.organizationModel = Organization.default(sequelize)
                 this.memberSurveyPermissionModel = MemberSurveyPermission.default(sequelize)
+                this.surveyModel = Survey.default(sequelize, this.memberSurveyPermissionModel)
+                this.userModel = User.default(sequelize, this.memberModel, this.memberSurveyPermissionModel)
+                this.organizationModel = Organization.default(sequelize, this.memberModel, this.surveyModel)
         
-                sequelize.sync()
+                sequelize.sync({force: true})
             })
             .catch((err: Error) => {
                 console.error("Error on tables sync", err)

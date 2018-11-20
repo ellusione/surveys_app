@@ -2,6 +2,7 @@ import Sequelize from 'sequelize'
 import * as  Organization from './organization';
 import * as User from './user'
 import {Role} from '../roles'
+import {dbOptions} from './database'
 
 export const tableName = 'members'
 
@@ -39,7 +40,7 @@ const Attributes = {
 
 export default (sequelize: Sequelize.Sequelize) => {
     const model = sequelize.define<Instance, Attributes>(
-        tableName, Attributes
+        tableName, Attributes, dbOptions
     )
 
     model.associate = models => {

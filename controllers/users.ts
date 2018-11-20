@@ -7,6 +7,16 @@ import * as User from '../models/user'
 
 export default function initUsersController(app: Express.Express, modelsFactory: ModelsFactory) {
 
+    app.post('users', [
+        Validator.body('name').isString(),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.userModel.create({name: req.body.name})
+
+        return res.status(200).send(result)
+    })
+
     app.get('/users', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
@@ -59,13 +69,21 @@ export default function initUsersController(app: Express.Express, modelsFactory:
         return res.status(200).json(result) 
     })
 
-    app.post('users', [
-        Validator.body('name').isString(),
+    app.delete('/users/:user_id', [
+        Validator.param('user_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
-        const result = await modelsFactory.userModel.create({name: req.body.name})
+        const result = await modelsFactory.userModel.destroy({
+            where: {
+                user_id: req.params.user_id
+            }
+        })
+        
+        if (result === 1) {
+            return res.status(200)
+        }
 
-        return res.status(200).send(result)
+        return res.status(404)
     })
 }

@@ -7,6 +7,16 @@ import * as Organization from '../models/organization'
 
 export default function initOrganizationsController(app: Express.Express, modelsFactory: ModelsFactory) {
 
+    app.post('organizations', [
+        Validator.body('name').isString(),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.organizationModel.create({name: req.body.name})
+
+        return res.status(200).send(result)
+    })
+
     app.get('/organizations', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
@@ -60,13 +70,22 @@ export default function initOrganizationsController(app: Express.Express, models
         return res.status(200).json(result) 
     })
 
-    app.post('organizations', [
-        Validator.body('name').isString(),
+    app.delete('/organizations/:organization_id', [
+        Validator.param('organization_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
-        const result = await modelsFactory.organizationModel.create({name: req.body.name})
+        const result = await modelsFactory.organizationModel
+            .destroy({
+                where: {
+                    id: req.params.organization_id
+                }
+            }) 
 
-        return res.status(200).send(result)
+        if (result === 1) {
+            return res.status(200)
+        }
+
+        return res.status(404)
     })
 }

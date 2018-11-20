@@ -1,6 +1,8 @@
 import Sequelize from 'sequelize'
 import * as User from './user'
 import * as Organization from './organization';
+import {dbOptions} from './database'
+import * as MemberSurveyPermissions from './member_survey_permission'
 
 export const tableName = 'surveys'
 
@@ -34,9 +36,27 @@ const Attributes = {
     }
 }
 
-export default (sequelize: Sequelize.Sequelize) => {
+export default (
+    sequelize: Sequelize.Sequelize,
+    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermissions.Instance, MemberSurveyPermissions.Attributes>
+) => {
+    const options = Object.assign({}, dbOptions, {
+        hooks: {
+            //todo make a worker
+            afterDelete: (survey: Instance) => {
+                if (!survey.id) {
+                    throw new Error('Survey does not have id')
+                }
+                memberSurveyPermissionsModel.destroy({
+                    where: {
+                        survey_id: survey.id
+                    }
+                })
+            }
+        }
+    })
     const model =  sequelize.define<Instance, Attributes>(
-        tableName, Attributes
+        tableName, Attributes, options
     )
 
     model.associate = models => {
@@ -46,6 +66,7 @@ export default (sequelize: Sequelize.Sequelize) => {
         model.belongsTo(models.Organizations, {
             as: 'organization', foreignKey: 'organization_id'
         })
+        model.hasMany(models.member_survey_permissions)
     }
 
     return model
