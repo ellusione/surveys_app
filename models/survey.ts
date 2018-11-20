@@ -1,13 +1,16 @@
 import Sequelize from 'sequelize'
 import * as User from './user'
+import * as Organization from './organization';
 
 export const tableName = 'surveys'
 
 export interface Attributes {
     id?: number,
     name: string,
-    owner_id: number,
-    owner?: User.Attributes 
+    creator_id: number,
+    creator?: User.Attributes,
+    organization_id: number,
+    organization?: Organization.Attributes
 }
 
 export type Instance = Sequelize.Instance<Attributes> & Attributes
@@ -15,10 +18,19 @@ export type Instance = Sequelize.Instance<Attributes> & Attributes
 const Attributes = {
     id: {type: Sequelize.NUMBER, primaryKey: true},
     name: {type: Sequelize.STRING, allowNull: false},
-    owner_id: {
+    creator_id: {
         type: Sequelize.NUMBER, 
         allowNull: false, 
-        references: {model: User.userTableName, key: 'id' }
+        references: {
+            model: User.tableName, key: 'id' 
+        }
+    },
+    organization_id: {
+        type: Sequelize.NUMBER, 
+        allowNull: false, 
+        references: {
+            model: Organization.tableName, key: 'id' 
+        }
     }
 }
 
@@ -28,7 +40,12 @@ export default (sequelize: Sequelize.Sequelize) => {
     )
 
     model.associate = models => {
-        model.belongsTo(models.Users, {as: 'owner', foreignKey: 'owner_id'})
+        model.belongsTo(models.Users, {
+            as: 'creator', foreignKey: 'creator_id'
+        })
+        model.belongsTo(models.Organizations, {
+            as: 'organization', foreignKey: 'organization_id'
+        })
     }
 
     return model

@@ -6,7 +6,7 @@ import * as Member from './member'
 import * as Organization from './organization'
 import Sequelize from 'sequelize';
 
-export class Models {
+export default class ModelsFactory {
 
     surveyModel: Sequelize.Model<Survey.Instance, Survey.Attributes>
 

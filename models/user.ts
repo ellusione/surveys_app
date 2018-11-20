@@ -1,6 +1,6 @@
 import Sequelize from 'sequelize'
 
-export const userTableName = 'users'
+export const tableName = 'users'
 
 export interface Attributes {
     id?: number,
@@ -16,7 +16,7 @@ const Attributes = {
 
 export default (sequelize: Sequelize.Sequelize) => {
     const model =  sequelize.define<Instance, Attributes>(
-        userTableName, Attributes
+        tableName, Attributes
     )
 
     model.associate = models => {
