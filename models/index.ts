@@ -21,6 +21,10 @@ export default class ModelsFactory {
 
     constructor () {
         Database.init()
+            .catch((err: Error) => {
+                console.error("db connection unsuccessful", err)
+                throw err
+            })
             .then((sequelize) => {
                 this.surveyModel = Survey.default(sequelize)
                 this.userModel = User.default(sequelize)
@@ -31,7 +35,7 @@ export default class ModelsFactory {
                 sequelize.sync()
             })
             .catch((err: Error) => {
-                console.error("db connection unsuccessful", err)
+                console.error("Error on tables sync", err)
                 throw err
             })
     }

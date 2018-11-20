@@ -17,24 +17,25 @@ export interface Attributes {
 export type Instance = Sequelize.Instance<Attributes> & Attributes
 
 const Attributes = {
-    id: {type: Sequelize.NUMBER, primaryKey: true},
+    id: {type: Sequelize.INTEGER, primaryKey: true},
     user_id: {
-        type: Sequelize.NUMBER, 
+        type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {model: User.tableName, key: 'id' }
     },
     survey_id: {
-        type: Sequelize.NUMBER, 
+        type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {model: Survey.tableName, key: 'id' }
     },
     role_id: {
-        type: Sequelize.NUMBER, 
+        type: Sequelize.INTEGER, 
         allowNull: false,
         validate: {min: 1, max: Role.allRoles.size}
     },
     uniqueKeys: {
-        'unq_user_survey_role': ['user_id', 'survey_id', 'role_id']    
+        'unq_user_survey_role': ['user_id', 'survey_id', 'role_id'],
+        customIndex: true    
     }
 }
 
