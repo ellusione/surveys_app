@@ -12,32 +12,53 @@ export default function initSurveysController(app: Express.Express, modelsFactor
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
         validationErrorHandlingFn
     ],
-    (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response) => {
         const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
         const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
 
-        modelsFactory.surveyModel.findAndCountAll({
+        const result = await modelsFactory.surveyModel.findAndCountAll({
             offset: page * limit,
             limit: limit
-        }).then((result) => {
-            return res.status(200).json(result) //is total correct?
         })
+
+        return res.status(200).json(result) //is total correct?
     })
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    (req: Express.Request, res: Express.Response) => {
-        modelsFactory.surveyModel
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.surveyModel
             .findById(req.params.survey_id)
-            .then((result) => {
-                if (result) {
-                    return res.status(200).json(result) 
-                }
-                return res.status(404)
-            })
+
+        if (result) {
+            return res.status(200).json(result) 
+        }
+        return res.status(404)
+    })
+
+    app.patch('/surveys/:survey_id', [
+        Validator.param('survey_id').isInt({gt: 0}),
+        Validator.body('name').isString(),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.surveyModel
+            .findById(req.params.survey_id)
+
+        if (!result) {
+            return res.status(404)
+        }
+
+        if (result.name === req.body.name) {
+            return res.status(200).json(result) 
+        }
+
+        await result.update({name: req.body.name})
+
+        return res.status(200).json(result) 
     })
 
     //add authentication. user and org in auth
@@ -47,7 +68,7 @@ export default function initSurveysController(app: Express.Express, modelsFactor
         Validator.body('name').isString(),
         validationErrorHandlingFn
     ],
-    async function (req: Express.Request, res: Express.Response) {
+    async (req: Express.Request, res: Express.Response) => {
         const member = await modelsFactory.memberModel.findOne({
             where: {
                 user_id: req.body.creator_id,
@@ -64,6 +85,13 @@ export default function initSurveysController(app: Express.Express, modelsFactor
         if (!role.capabilities.get(Capabilities.Create)) {
             return res.status(403).send('Member not authorized to create survey')
         }
-            
+
+        const result = modelsFactory.surveyModel.create({
+            name: req.body.name, 
+            creator_id: req.body.creator_id, 
+            organization_id: req.body.organization_id
+        })
+
+        return res.status(200).send(result)   
     })
 }

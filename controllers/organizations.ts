@@ -17,12 +17,12 @@ export default function initOrganizationsController(app: Express.Express, models
 
         const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
 
-        modelsFactory.organizationModel.findAndCountAll({
+        const result = await modelsFactory.organizationModel.findAndCountAll({
             offset: page * limit,
             limit: limit
-        }).then((result) => {
-            return res.status(200).json(result) //is total correct?
         })
+
+        return res.status(200).json(result) //is total correct?
     })
 
     app.get('/organizations/:organization_id', [
@@ -30,12 +30,34 @@ export default function initOrganizationsController(app: Express.Express, models
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
-        const result = modelsFactory.organizationModel.findById(req.params.organization_id)
-        
+        const result = await modelsFactory.organizationModel.findById(req.params.organization_id)
+
         if (result) {
             return res.status(200).json(result) 
         }
         return res.status(404)
+    })
+
+    app.patch('/organizations/:organization_id', [
+        Validator.param('organization_id').isInt({gt: 0}),
+        Validator.body('name').isString(),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.organizationModel
+            .findById(req.params.organization_id)
+
+        if (!result) {
+            return res.status(404)
+        }
+
+        if (result.name === req.body.name) {
+            return res.status(200).json(result) 
+        }
+
+        await result.update({name: req.body.name})
+
+        return res.status(200).json(result) 
     })
 
     app.post('organizations', [

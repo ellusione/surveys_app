@@ -12,41 +12,60 @@ export default function initUsersController(app: Express.Express, modelsFactory:
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
         validationErrorHandlingFn
     ],
-    (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response) => {
         const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
         const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
 
-        modelsFactory.userModel.findAndCountAll({
+        const result = await modelsFactory.userModel.findAndCountAll({
             offset: page * limit,
             limit: limit
-        }).then((result) => {
-            return res.status(200).json(result) //is total correct?
         })
+        return res.status(200).json(result) //is total correct?
     })
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    (req: Express.Request, res: Express.Response) => {
-        modelsFactory.userModel
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.userModel.findById(req.params.user_id)
+        
+        if (result) {
+            return res.status(200).json(result) 
+        }
+        return res.status(404)
+    })
+
+    app.patch('/users/:user_id', [
+        Validator.param('user_id').isInt({gt: 0}),
+        Validator.body('name').isString(),
+        validationErrorHandlingFn
+    ],
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.userModel
             .findById(req.params.user_id)
-            .then((result) => {
-                if (result) {
-                    return res.status(200).json(result) 
-                }
-                return res.status(404)
-            })
+
+        if (!result) {
+            return res.status(404)
+        }
+
+        if (result.name === req.body.name) {
+            return res.status(200).json(result) 
+        }
+
+        await result.update({name: req.body.name})
+
+        return res.status(200).json(result) 
     })
 
     app.post('users', [
         Validator.body('name').isString(),
         validationErrorHandlingFn
     ],
-    async function (req: Express.Request, res: Express.Response) {
-        const user = await modelsFactory.userModel.create({name: req.body.name})
+    async (req: Express.Request, res: Express.Response) => {
+        const result = await modelsFactory.userModel.create({name: req.body.name})
 
-        return res.status(200).send(user)
+        return res.status(200).send(result)
     })
 }
