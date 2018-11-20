@@ -6,16 +6,9 @@ const sequelize = new Sequelize(
     { dialect: 'postgres' }
 )
 
-export function init(): Promise<Sequelize.Sequelize> {
+export async function init(): Promise<Sequelize.Sequelize> {
+    await sequelize.authenticate()
+    console.log("db connection successful")
     return sequelize
-        .authenticate()
-        .then(() => {
-            console.log("db connection successful")
-            return sequelize
-        })
-        .catch((err) => {
-            console.error("db connection unsuccessful", err)
-            throw err
-        })
 }
     

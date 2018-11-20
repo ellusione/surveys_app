@@ -1,16 +1,16 @@
 import Sequelize from 'sequelize'
-import * as  Organization from './organization';
+import * as  Survey from './survey';
 import * as User from './user'
 import {Role} from '../roles'
 
-export const tableName = 'members'
+export const tableName = 'member_survey_permissions'
 
 export interface Attributes {
     id?: number,
     user_id: number,
     user?: User.Attributes,
-    organization_id: number,
-    organization?: Organization.Attributes,
+    survey_id: number,
+    survey?: Survey.Attributes,
     role_id: number
 }
 
@@ -23,18 +23,18 @@ const Attributes = {
         allowNull: false, 
         references: {model: User.tableName, key: 'id' }
     },
-    organization_id: {
+    survey_id: {
         type: Sequelize.NUMBER, 
         allowNull: false, 
-        references: {model: Organization.tableName, key: 'id' }
+        references: {model: Survey.tableName, key: 'id' }
     },
     role_id: {
         type: Sequelize.NUMBER, 
         allowNull: false,
-        validate: {min: 1, max: Object.keys(Role.allRoles.size).length}
+        validate: {min: 1, max: Role.allRoles.size}
     },
     uniqueKeys: {
-        'unq_user_org': ['user_id', 'organization_id']    
+        'unq_user_survey_role': ['user_id', 'survey_id', 'role_id']    
     }
 }
 
@@ -47,8 +47,8 @@ export default (sequelize: Sequelize.Sequelize) => {
         model.belongsTo(models.Users, {
             as: 'user', foreignKey: 'user_id'
         })
-        model.belongsTo(models.Organizations, {
-            as: 'organization', foreignKey: 'organization_id'
+        model.belongsTo(models.Surveys, {
+            as: 'survey', foreignKey: 'survey_id'
         })
     }
 

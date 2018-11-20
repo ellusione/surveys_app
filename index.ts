@@ -1,4 +1,5 @@
 import ModelsFactory from './models'
+import {Role, Capabilities} from './roles'
 import Express from 'express';
 import Http from 'http';
 import Validator from 'express-validator/check'
@@ -59,6 +60,7 @@ app.get('/surveys/:survey_id', [
         })
 })
 
+//add authentication. user and org in auth
 app.post('surveys', [
     Validator.body('creator_id').isInt({gt: 0}),
     Validator.body('organization_id').isInt({gt: 0}),
@@ -66,8 +68,21 @@ app.post('surveys', [
     validationErrorHandlingFn
 ],
 async function (req: Express.Request, res: Express.Response) {
-    const result = await modelsFactory.userModel.findById(req.body.creator_id)
-        // .then((result)) => {
-        //     if (result) {
-        // }
+    const member = await modelsFactory.memberModel.findOne({
+        where: {
+            user_id: req.body.creator_id,
+            organization_id: req.body.organization_id
+        }
+    })
+
+    if (!member) {
+        return res.status(404).send('Member does not exist')
+    }
+
+    const role = Role.findByRoleId(member.role_id)
+
+    if (!role.capabilities.get(Capabilities.Create)) {
+        return res.status(403).send('Member not authorized to create survey')
+    }
+        
 })

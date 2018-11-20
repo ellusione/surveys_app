@@ -1,0 +1,11 @@
+    const user = await modelsFactory.userModel.findById(req.body.creator_id)
+
+    if (!user) {
+        return res.status(404).send('User does not exist')
+    }
+
+    const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
+
+    if (!organization) {
+        return res.status(404).send('Organization does not exist')
+    }

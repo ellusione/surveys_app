@@ -4,6 +4,7 @@ import * as Survey from './survey'
 import * as User from './user'
 import * as Member from './member'
 import * as Organization from './organization'
+import * as MemberSurveyPermission from './member_survey_permission'
 import Sequelize from 'sequelize';
 
 export default class ModelsFactory {
@@ -16,14 +17,22 @@ export default class ModelsFactory {
 
     organizationModel: Sequelize.Model<Organization.Instance, Organization.Attributes>
 
+    memberSurveyPermissionModel: Sequelize.Model<MemberSurveyPermission.Instance, MemberSurveyPermission.Attributes>
+
     constructor () {
-        Database.init().then((sequelize) => {
-            this.surveyModel = Survey.default(sequelize)
-            this.userModel = User.default(sequelize)
-            this.memberModel = Member.default(sequelize)
-            this.organizationModel = Organization.default(sequelize)
-    
-            sequelize.sync()
-        })
+        Database.init()
+            .then((sequelize) => {
+                this.surveyModel = Survey.default(sequelize)
+                this.userModel = User.default(sequelize)
+                this.memberModel = Member.default(sequelize)
+                this.organizationModel = Organization.default(sequelize)
+                this.memberSurveyPermissionModel = MemberSurveyPermission.default(sequelize)
+        
+                sequelize.sync()
+            })
+            .catch((err: Error) => {
+                console.error("db connection unsuccessful", err)
+                throw err
+            })
     }
 }
