@@ -9,7 +9,7 @@ export interface Attributes {
 
 export type Instance = Sequelize.Instance<Attributes> & Attributes
 
-const Attributes = {
+export const Attributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true},
     name: {type: Sequelize.STRING, allowNull: false}
 }

@@ -21,20 +21,19 @@ const Attributes = {
     user_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: User.tableName, key: 'id' }
+        references: {model: User.tableName, key: 'id' },
+        unique: 'unq_user_org'
     },
     organization_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: Organization.tableName, key: 'id' }
+        references: {model: Organization.tableName, key: 'id' },
+        unique: 'unq_user_org'
     },
     role_id: {
         type: Sequelize.INTEGER, 
         allowNull: false,
         validate: {min: 1, max: Role.allRoles.size}
-    },
-    uniqueKeys: {
-        'unq_user_org': ['user_id', 'organization_id']    
     }
 }
 
