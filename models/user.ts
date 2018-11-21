@@ -2,7 +2,7 @@ import Sequelize from 'sequelize'
 import * as Survey from './survey'
 import * as Member from './member'
 import * as MemberSurveyPermissions from './member_survey_permission'
-import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
+import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
 export const tableName = 'users'
 
@@ -16,7 +16,7 @@ const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     name: {type: Sequelize.STRING, allowNull: false}
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
+export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseAttributes
 
 export default (
     sequelize: Sequelize.Sequelize, 
@@ -28,25 +28,25 @@ export default (
             //change creator of survey also?
             //todo make a worker
             afterDelete: (user: Instance) => {
-                if (!user.id) {
-                    throw new Error('User does not have id')
-                }
+                const user_id = getInstanceId(user)
+
                 memberModel.destroy({
                     where: {
-                        user_id: user.id
+                        user_id: user_id
                     }
                 })
                 memberSurveyPermissionsModel.destroy({
                     where: {
-                        user_id: user.id
+                        user_id: user_id
                     }
                 })
             }
         }
     })
+
     const model =  sequelize.define<Instance, Attributes>(
         tableName, sequelizeAttributes, options
-    )
+    ) 
 
     model.associate = models => {
         model.hasMany(models.Surveys)

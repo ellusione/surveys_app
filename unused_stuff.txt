@@ -92,3 +92,24 @@ export function getId<T extends BaseInstance>(instance: T) {
 
     return instance.id
 }
+
+export function getId (instance: BaseInstance): number {
+    if (!instance.id) {
+        throw new TypeError(`no instance id on ${instance.Model.name}`)
+    }
+
+    return instance.id
+}
+    model.Instance.prototype.getId = getId.bind(null, model.Instance)
+
+
+export type Instance = Sequelize.Instance<Attributes> & Attributes & A
+
+type B = Attributes & A
+function d (a: B) {
+    a.getId(1)
+}
+d({name: 's'})
+
+
+    //model.Instance().getId = (id: number|undefined) => 1

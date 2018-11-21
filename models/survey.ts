@@ -2,7 +2,7 @@ import Sequelize from 'sequelize'
 import * as User from './user'
 import * as Organization from './organization';
 import * as MemberSurveyPermissions from './member_survey_permission'
-import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
+import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
 export const tableName = 'surveys'
 
@@ -15,7 +15,7 @@ export interface Attributes extends BaseAttributes {
     organization?: Organization.Attributes
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
+export type Instance = Sequelize.Instance<Attributes> & Attributes 
 
 export const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
@@ -24,7 +24,7 @@ export const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = 
         type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {
-            model: User.tableName, key: 'id' 
+            model: User.tableName, key: 'id'  //fix tablename
         }
     },
     organization_id: {
@@ -44,17 +44,17 @@ export default (
         hooks: {
             //todo make a worker
             afterDelete: (survey: Instance) => {
-                if (!survey.id) {
-                    throw new Error('Survey does not have id')
-                }
+                const survey_id = getInstanceId(survey)
+
                 memberSurveyPermissionsModel.destroy({
                     where: {
-                        survey_id: survey.id
+                        survey_id: survey_id
                     }
                 })
             }
         }
     })
+
     const model =  sequelize.define<Instance, Attributes>(
         tableName, sequelizeAttributes, options
     )
@@ -69,5 +69,8 @@ export default (
         model.hasMany(models.member_survey_permissions)
     }
 
+  //  model.Instance().getId = (id: number|undefined) => 1
+
+    
     return model
 }

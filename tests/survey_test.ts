@@ -1,4 +1,5 @@
 import ModelsFactory from '../models'
+import {getInstanceId} from '../models/helpers'
 import {initDB} from '../database'
 import * as User from '../models/user'
 import * as Organization from '../models/organization'
@@ -18,15 +19,15 @@ describe('Survey test', () => {
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
         
         member = await modelsFactory.memberModel.create({
-            user_id: user.getId(), 
-            organization_id: organization.getId(), 
+            user_id: getInstanceId(user), 
+            organization_id: getInstanceId(organization), 
             role_id: Roles.memberRole.id
         })
     })
 
     it('Should save survey', async () => {
         const result = await modelsFactory.surveyModel.create({
-            name: 'a', creator_id: user.getId(), organization_id: organization.getId()
+            name: 'a', creator_id: getInstanceId(user), organization_id: getInstanceId(organization)
         })
         expect(result.creator_id).to.exist
         expect(result.creator_id).to.equal(user.id)

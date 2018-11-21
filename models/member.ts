@@ -2,7 +2,7 @@ import Sequelize from 'sequelize'
 import * as  Organization from './organization';
 import * as User from './user'
 import {Role} from '../roles'
-import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
+import {BaseAttributes, dbOptions} from './helpers';
 
 export const tableName = 'members'
 
@@ -15,7 +15,7 @@ export interface Attributes extends BaseAttributes {
     role_id: number
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
+export type Instance = Sequelize.Instance<Attributes> & Attributes 
 
 const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},

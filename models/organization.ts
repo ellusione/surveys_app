@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize'
 import * as Member from './member'
 import * as Survey from './survey'
-import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
+import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
 export const tableName = 'organizations'
 
@@ -10,7 +10,7 @@ export interface Attributes extends BaseAttributes {
     name: string
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
+export type Instance = Sequelize.Instance<Attributes> & Attributes
 
 const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
@@ -26,19 +26,17 @@ export default (
         hooks: {
             //todo make a worker
             afterDelete: (organization: Instance) => {
-                if (!organization.id) {
-                    throw new Error('no id on organization') //fixme
-                }
+                const org_id = getInstanceId(organization)
 
                 memberModel.destroy({
                     where: {
-                        organization_id: organization.id
+                        organization_id: org_id
                     }
                 })
 
                 surveyModel.destroy({
                     where: {
-                        organization_id: organization.id
+                        organization_id: org_id
                     }
                 })
             }
