@@ -1,16 +1,16 @@
 import Sequelize from 'sequelize'
-import {dbOptions} from '../database'
 import * as Member from './member'
 import * as Survey from './survey'
+import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
 
 export const tableName = 'organizations'
 
-export interface Attributes {
+export interface Attributes extends BaseAttributes {
     id?: number,
     name: string
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes
+export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
 
 const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},

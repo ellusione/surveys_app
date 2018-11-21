@@ -16,26 +16,27 @@ describe('Survey test', () => {
         modelsFactory = await initDB()
         user = await modelsFactory.userModel.create({name: 'user a'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
-
-        if (!user.id || !organization.id) { //fixme
-            throw new Error('no id')
-        }
         
         member = await modelsFactory.memberModel.create({
-            user_id: user.id, 
-            organization_id: organization.id, 
+            user_id: user.getId(), 
+            organization_id: organization.getId(), 
             role_id: Roles.memberRole.id
         })
     })
 
-    it('should return hello world', async () => {
-        if (!user.id || !organization.id) {
-            throw new Error('no id')
-        }
+    it('Should save survey', async () => {
         const result = await modelsFactory.surveyModel.create({
-            name: 'a', creator_id: user.id, organization_id: organization.id
+            name: 'a', creator_id: user.getId(), organization_id: organization.getId()
         })
-        expect(result).to.equal('Hello World!');
+        expect(result.creator_id).to.exist
+        expect(result.creator_id).to.equal(user.id)
+
+        expect(result.name).to.equal('a')
+
+        expect(result.organization_id).to.exist
+        expect(result.organization_id).to.equal(organization.id)
+
+        expect(result.id).to.exist
     })
 
 })

@@ -1,12 +1,12 @@
 import Sequelize from 'sequelize'
 import * as User from './user'
 import * as Organization from './organization';
-import {dbOptions} from '../database'
 import * as MemberSurveyPermissions from './member_survey_permission'
+import {BaseAttributes, BaseMethods, dbOptions} from './helpers';
 
 export const tableName = 'surveys'
 
-export interface Attributes {
+export interface Attributes extends BaseAttributes {
     id?: number,
     name: string,
     creator_id: number,
@@ -15,7 +15,7 @@ export interface Attributes {
     organization?: Organization.Attributes
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes
+export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseMethods
 
 export const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},

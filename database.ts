@@ -7,12 +7,6 @@ const sequelize = new Sequelize(
     { dialect: 'postgres' }
 )
 
-export const dbOptions = {
-    timestamps: true,
-    freezeTableName: true,
-    paranoid: true
-}
-
 export async function initDB(): Promise<ModelsFactory> {
     await sequelize.authenticate()
     console.log("DB connection successful")

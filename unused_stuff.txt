@@ -13,3 +13,82 @@
                 console.error("DB connection unsuccessful", err)
                 throw err
             })
+
+export default interface BaseAttributes {
+    id?: number
+}
+
+export interface Attributes extends BaseAttributes { //optional
+    id?: number,
+    name: string
+}
+
+interface Attributes2 {
+    id: number,
+    name: string
+}
+
+export type Instance2 = Sequelize.Instance<Attributes2> & Attributes2
+
+            afterSave: (user: Instance): Instance2 => {
+                if (user.id) {
+                    return user
+                }
+                throw new Error()
+            },
+
+            interface BaseAttributes2 {
+    id: number
+}
+
+interface BaseAttributes3 {
+    wow: number
+}
+
+type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes
+type BaseInstance2 = Sequelize.Instance<BaseAttributes2> & BaseAttributes2
+
+export default class ModelsFactory {
+
+    static validateHasId(instance: BaseInstance) {
+        if (!instance.id) {
+            throw new Error()
+        }
+
+        return instance
+    }
+
+    interface BaseAttributes {
+    id?:number
+}
+type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes
+
+export default class ModelsFactory {
+
+    static validateHasId<T extends BaseInstance>(instance: T) {
+        if (!instance.id) {
+            throw new Error()
+        }
+
+        return instance
+    }
+
+    ---
+
+    const options = Object.assign({}, dbOptions, {
+    instanceMethods: {
+        getId: (instance: Instance)
+    }
+})
+
+export interface Instance extends Sequelize.Instance<Attributes>, Attributes{
+    getId: number
+}
+
+export function getId<T extends BaseInstance>(instance: T) {
+    if (!instance.id) {
+        throw new TypeError(`no instance id on ${instance.Model.name}`)
+    }
+
+    return instance.id
+}
