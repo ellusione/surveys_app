@@ -78,9 +78,39 @@ export default function initSurveysController(app: Express.Express, modelsFactor
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
+        const member = await modelsFactory.memberModel.findOne({
+            where: {
+                user_id: req.body.user_id,
+                organization_id: req.body.organization_id
+            }
+        })
+
+        if (!member) {
+            return res.status(404).send('Member does not exist')
+        }
+
+        const role = Role.findByRoleId(member.role_id)
+
+        if (!role.capabilities.get(Capabilities.Edit)) {
+
+            const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
+                where: {
+                    user_id: req.body.user_id,
+                    survey_id: req.params.survey_id
+                }
+            })
+
+            if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Edit)) {
+                return res.status(403).send(
+                    'Member not authorized to edit survey'
+                )
+            }
+        }
+        
         const result = await modelsFactory.surveyModel
             .findById(req.params.survey_id)
 
@@ -99,9 +129,38 @@ export default function initSurveysController(app: Express.Express, modelsFactor
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
+        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
+        const member = await modelsFactory.memberModel.findOne({
+            where: {
+                user_id: req.body.creator_id,
+                organization_id: req.body.organization_id
+            }
+        })
+
+        if (!member) {
+            return res.status(404).send('Member does not exist')
+        }
+
+        const role = Role.findByRoleId(member.role_id)
+
+        if (!role.capabilities.get(Capabilities.Delete)) {
+            const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
+                where: {
+                    user_id: req.body.user_id,
+                    survey_id: req.params.survey_id
+                }
+            })
+
+            if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Delete)) {
+                return res.status(403).send(
+                    'Member not authorized to delete survey'
+                )
+            }
+        }
+
         const result = await modelsFactory.surveyModel
             .destroy({
                 where: {

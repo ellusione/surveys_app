@@ -22,7 +22,7 @@ export default class ModelsFactory {
     constructor () {
         Database.init()
             .catch((err: Error) => {
-                console.error("db connection unsuccessful", err)
+                console.error("DB connection unsuccessful", err)
                 throw err
             })
             .then((sequelize) => {
@@ -35,7 +35,7 @@ export default class ModelsFactory {
                 sequelize.sync({force: true})
             })
             .catch((err: Error) => {
-                console.error("Error on tables sync", err)
+                console.error("Initialization error", err)
                 throw err
             })
     }

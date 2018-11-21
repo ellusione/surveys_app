@@ -3,7 +3,7 @@ import Validator from 'express-validator/check'
 import ModelsFactory from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
-import * as Organization from '../models/organization'
+import {Role, Capabilities} from '../roles'
 
 export default function initOrganizationsController(app: Express.Express, modelsFactory: ModelsFactory) {
 
@@ -51,9 +51,29 @@ export default function initOrganizationsController(app: Express.Express, models
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
+        const member = await modelsFactory.memberModel.findOne({
+            where: {
+                user_id: req.body.user_id,
+                organization_id: req.body.organization_id
+            }
+        })
+
+        if (!member) {
+            return res.status(404).send('Member does not exist')
+        }
+
+        const role = Role.findByRoleId(member.role_id)
+
+        if (!role.capabilities.get(Capabilities.Edit)) {
+            return res.status(403).send(
+                'Member not authorized to edit organization'
+            )
+        }
+
         const result = await modelsFactory.organizationModel
             .findById(req.params.organization_id)
 
@@ -75,6 +95,25 @@ export default function initOrganizationsController(app: Express.Express, models
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
+        const member = await modelsFactory.memberModel.findOne({
+            where: {
+                user_id: req.body.user_id,
+                organization_id: req.body.organization_id
+            }
+        })
+
+        if (!member) {
+            return res.status(404).send('Member does not exist')
+        }
+
+        const role = Role.findByRoleId(member.role_id)
+
+        if (!role.capabilities.get(Capabilities.Delete)) {
+            return res.status(403).send(
+                'Member not authorized to delete organization'
+            )
+        }
+        
         const result = await modelsFactory.organizationModel
             .destroy({
                 where: {

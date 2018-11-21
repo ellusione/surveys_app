@@ -15,20 +15,20 @@ enum RoleTitle {
 }
 
 export class Role {
-    static allRoles: Map<Number, Role>
+    static allRoles: Map<number, Role>
 
-    readonly id: Number
+    readonly id: number
 
     readonly title: RoleTitle
 
-    readonly capabilities: Map<Number, Capabilities>
+    readonly capabilities: Map<number, Capabilities>
 
     constructor(title: RoleTitle, capabilities: Capabilities[]) {
         this.id = title.valueOf()
 
         this.title = title
 
-        const capabilitiesMap = new Map<Number, Capabilities>()
+        const capabilitiesMap = new Map<number, Capabilities>()
 
         capabilities.forEach((capability) => {
             capabilitiesMap.set(capability.valueOf(), capability)
@@ -39,7 +39,7 @@ export class Role {
         Role.allRoles.set(this.id, this)
     }
 
-    static findByRoleId (role_id: Number) {
+    static findByRoleId (role_id: number) {
         const role = Role.allRoles.get(role_id)
 
         if (!role) {
@@ -50,7 +50,7 @@ export class Role {
     }
 }
 
-Role.allRoles = new Map<Number, Role>()
+Role.allRoles = new Map<number, Role>()
 
 export const memberRole = new Role(
     RoleTitle.Member, []

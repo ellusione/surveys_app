@@ -11,12 +11,11 @@ export interface Attributes {
     name: string
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes
-
-export const Attributes = {
+const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true},
     name: {type: Sequelize.STRING, allowNull: false}
 }
+export type Instance = Sequelize.Instance<Attributes> & Attributes
 
 export default (
     sequelize: Sequelize.Sequelize, 
@@ -45,7 +44,7 @@ export default (
         }
     })
     const model =  sequelize.define<Instance, Attributes>(
-        tableName, Attributes, options
+        tableName, sequelizeAttributes, options
     )
 
     model.associate = models => {
