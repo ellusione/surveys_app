@@ -9,3 +9,7 @@
     if (!organization) {
         return res.status(404).send('Organization does not exist')
     }
+    .catch((err: Error) => {
+                console.error("DB connection unsuccessful", err)
+                throw err
+            })

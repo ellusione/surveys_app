@@ -1,5 +1,5 @@
 import Sequelize from 'sequelize'
-import { dbOptions } from './database';
+import { dbOptions } from '../database';
 import * as Survey from './survey'
 import * as Member from './member'
 import * as MemberSurveyPermissions from './member_survey_permission'
@@ -12,7 +12,7 @@ export interface Attributes {
 }
 
 const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
-    id: {type: Sequelize.INTEGER, primaryKey: true},
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false}
 }
 export type Instance = Sequelize.Instance<Attributes> & Attributes

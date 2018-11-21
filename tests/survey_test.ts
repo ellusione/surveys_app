@@ -1,4 +1,5 @@
 import ModelsFactory from '../models'
+import {initDB} from '../database'
 import * as User from '../models/user'
 import * as Organization from '../models/organization'
 import * as Member from '../models/member'
@@ -12,7 +13,7 @@ describe('Survey test', () => {
     let member: Member.Instance
 
     before('Init db', async () => {
-        modelsFactory = new ModelsFactory()
+        modelsFactory = await initDB()
         user = await modelsFactory.userModel.create({name: 'user a'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
 
@@ -27,14 +28,14 @@ describe('Survey test', () => {
         })
     })
 
-  it('should return hello world', async () => {
-    if (!user.id || !organization.id) {
-        throw new Error('no id')
-    }
-    const result = await modelsFactory.surveyModel.create({
-        name: 'a', creator_id: user.id, organization_id: organization.id
+    it('should return hello world', async () => {
+        if (!user.id || !organization.id) {
+            throw new Error('no id')
+        }
+        const result = await modelsFactory.surveyModel.create({
+            name: 'a', creator_id: user.id, organization_id: organization.id
+        })
+        expect(result).to.equal('Hello World!');
     })
-    expect(result).to.equal('Hello World!');
-  })
 
 })

@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize'
 import * as User from './user'
 import * as Organization from './organization';
-import {dbOptions} from './database'
+import {dbOptions} from '../database'
 import * as MemberSurveyPermissions from './member_survey_permission'
 
 export const tableName = 'surveys'
@@ -18,7 +18,7 @@ export interface Attributes {
 export type Instance = Sequelize.Instance<Attributes> & Attributes
 
 export const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
-    id: {type: Sequelize.INTEGER, primaryKey: true},
+    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false},
     creator_id: {
         type: Sequelize.INTEGER, 
