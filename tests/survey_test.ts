@@ -7,9 +7,9 @@ import { expect } from 'chai';
 describe('Survey test', () => {
 
     let modelsFactory: Models.Factory
-    let user: Models.UserTypes.Instance
-    let organization: Models.OrganizationTypes.Instance
-    let survey: Models.SurveyTypes.Instance
+    let user: Models.UserInstance
+    let organization: Models.OrganizationInstance
+    let survey: Models.SurveyInstance
 
     before('Init db', async () => {
         modelsFactory = await initDB()

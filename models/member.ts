@@ -4,32 +4,32 @@ import * as User from './user'
 import {Role} from '../roles'
 import {BaseAttributes, dbOptions} from './helpers';
 
-export module Types {
-    export const tableName = 'members'
-    export interface Attributes extends BaseAttributes {
-        id?: number,
-        user_id: number,
-        user?: User.Types.Attributes,
-        organization_id: number,
-        organization?: Organization.Types.Attributes,
-        role_id: number
-    }
+export const memberTableName = 'members'
 
-    export type Instance = Sequelize.Instance<Attributes> & Attributes 
+export interface MemberAttributes extends BaseAttributes {
+    id?: number,
+    user_id: number,
+    user?: User.UserAttributes,
+    organization_id: number,
+    organization?: Organization.OrganizationAttributes,
+    role_id: number
 }
 
-const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
+export type MemberInstance = Sequelize.Instance<MemberAttributes> & MemberAttributes 
+
+
+const sequelizeAttributes: Sequelize.DefineModelAttributes<MemberAttributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     user_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: User.Types.tableName, key: 'id' },
+        references: {model: User.userTableName, key: 'id' },
         unique: 'unq_user_org'
     },
     organization_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: Organization.Types.tableName, key: 'id' },
+        references: {model: Organization.organizationTableName, key: 'id' },
         unique: 'unq_user_org'
     },
     role_id: {
@@ -40,8 +40,8 @@ const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
 }
 
 export default (sequelize: Sequelize.Sequelize) => {
-    const model = sequelize.define<Types.Instance, Types.Attributes>(
-        Types.tableName, sequelizeAttributes, dbOptions
+    const model = sequelize.define<MemberInstance, MemberAttributes>(
+        memberTableName, sequelizeAttributes, dbOptions
     )
 
     model.associate = models => {

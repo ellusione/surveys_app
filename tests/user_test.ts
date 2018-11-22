@@ -7,10 +7,10 @@ import { expect } from 'chai';
 describe('User test', () => {
 
     let modelsFactory: Models.Factory
-    let user: Models.UserTypes.Instance
-    let organization: Models.OrganizationTypes.Instance
-    let member: Models.MemberTypes.Instance
-    let survey: Models.SurveyTypes.Instance
+    let user: Models.UserInstance
+    let organization: Models.OrganizationInstance
+    let member: Models.MemberInstance
+    let survey: Models.SurveyInstance
 
     before('Init db', async () => {
         modelsFactory = await initDB()

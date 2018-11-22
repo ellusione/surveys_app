@@ -4,33 +4,31 @@ import * as User from './user'
 import {Role} from '../roles'
 import {BaseAttributes, dbOptions} from './helpers';
 
-export module Types {
-    export const tableName = 'member_survey_permissions'
+export const memberSurveyPermissionTableName = 'member_survey_permissions'
 
-    export interface Attributes extends BaseAttributes {
-        id?: number,
-        user_id: number,
-        user?: User.Types.Attributes,
-        survey_id: number,
-        survey?: Survey.Types.Attributes,
-        role_id: number
-    }
-
-    export type Instance = Sequelize.Instance<Attributes> & Attributes
+export interface MemberSurveyPermissionAttributes extends BaseAttributes {
+    id?: number,
+    user_id: number,
+    user?: User.UserAttributes,
+    survey_id: number,
+    survey?: Survey.SurveyAttributes,
+    role_id: number
 }
 
-const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
+export type MemberSurveyPermissionInstance = Sequelize.Instance<MemberSurveyPermissionAttributes> & MemberSurveyPermissionAttributes
+
+const sequelizeAttributes: Sequelize.DefineModelAttributes<MemberSurveyPermissionAttributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     user_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: User.Types.tableName, key: 'id' },
+        references: {model: User.userTableName, key: 'id' },
         unique: 'unq_user_survey_role'
     },
     survey_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: Survey.Types.tableName, key: 'id' },
+        references: {model: Survey.surveyTableName, key: 'id' },
         unique: 'unq_user_survey_role'
     },
     role_id: {
@@ -42,8 +40,8 @@ const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
 }
 
 export default (sequelize: Sequelize.Sequelize) => {
-    const model = sequelize.define<Types.Instance, Types.Attributes>(
-        Types.tableName, sequelizeAttributes, dbOptions
+    const model = sequelize.define<MemberSurveyPermissionInstance, MemberSurveyPermissionAttributes>(
+        memberSurveyPermissionTableName, sequelizeAttributes, dbOptions
     )
 
     model.associate = models => {
