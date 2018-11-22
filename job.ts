@@ -1,15 +1,8 @@
 import {initDB} from './database'
 import * as JobDefinition from './models/deletion_job/definition'
-import Http from 'http';
+import * as Model from './models'
 
-const port = process.env.JOB_PORT || 3100
-
-async function init() {
-    const modelsFactory = await initDB()
-
-    const server = new Http.Server()
-    server.listen(port)
-
+export function getDeletionRunnerFn(modelsFactory: Model.Factory) {
     async function process (job: JobDefinition.DeletionJobInstance) {
         const model = modelsFactory.sequelize.models[job.table_name]
 
@@ -24,13 +17,13 @@ async function init() {
         })
     }
 
-    async function processDeletionJob () {
+    async function processDeletionJob (): Promise<void> {
         const job = await modelsFactory.deletionJobModel.findOne({
-            // where: {
-            //     error_count: {
-            //         $lte: 11
-            //     }
-            // },
+            where: {
+                error_count: { //does this where clause work?
+                    $lte: 11
+                }
+            },
             order: [ [ 'createdAt', 'DESC' ]]
         })
 
@@ -51,9 +44,16 @@ async function init() {
         }
     }
 
-    setInterval(processDeletionJob, 5000)
+    return processDeletionJob
 }
 
-init()
+if (require.main === module) {
+    initDB().then((modelsFactory) => {
+
+        const fn = getDeletionRunnerFn(modelsFactory)
+
+        setInterval(fn, 5000)
+    })
+}
 
 

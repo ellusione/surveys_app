@@ -1,4 +1,5 @@
 import * as Models from '../models'
+import * as MemberSurveyPermissionDefinition from '../models/member_survey_permission/definition'
 import {getInstanceId} from '../models/helpers'
 import {initDB} from '../database'
 import * as Roles from '../roles'
@@ -65,9 +66,17 @@ describe('Survey test', () => {
 
             await survey.destroy()
 
-            const foundPermissionAfterDelete = await modelsFactory.memberSurveyPermissionModel.findById(memberSurveyPermission.id)
+            const foundDeletionJob = modelsFactory.deletionJobModel.findOne({
+                where: {
+                    table_name: MemberSurveyPermissionDefinition.memberSurveyPermissionTableName,
+                    error_count: 0,
+                    payload: JSON.stringify({
+                        survey_id: getInstanceId(survey) //bug! validate payload after
+                    })
+                }
+            })
 
-            expect(foundPermissionAfterDelete).to.not.exist
+            expect(foundDeletionJob).to.exist
         })
     })
 

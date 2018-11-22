@@ -5,7 +5,7 @@ import * as Definition from './definition'
 const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     table_name: {type: Sequelize.STRING, allowNull: false},
-    payload: {type: Sequelize.JSON, allowNull: false},
+    payload: {type: Sequelize.STRING, allowNull: false},
     error_count: {type: Sequelize.INTEGER, allowNull: false, defaultValue: 0}
 }
 
