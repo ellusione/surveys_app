@@ -1,9 +1,12 @@
+import * as chai from 'chai'
+import * as uuid from 'uuid'
+chai.use(require('chai-as-promised'))
 import * as Models from '../models'
 import * as MemberSurveyPermissionDefinition from '../models/member_survey_permission/definition'
 import {getInstanceId} from '../models/helpers'
 import {initDB} from '../database'
 import * as Roles from '../roles'
-import { expect } from 'chai';
+const expect = chai.expect
 
 describe('Survey test', () => {
 
@@ -41,6 +44,29 @@ describe('Survey test', () => {
             expect(foundRes).to.exist
         })
     })
+
+    describe('Update survey', () => {
+        it('Should throw error on invalid creator_id update', () => {
+            const fakeCreatorId = survey.creator_id + Math.random()*100
+            expect(survey.update({creator_id: fakeCreatorId})).to.eventually.throw(Error)
+        })
+
+        it('Should save survey on valid name update', async () => {
+            const newName = uuid.v4()
+            await survey.update({
+                name: newName
+            })
+
+            expect(survey.name).to.equal(newName)
+
+            const foundRes = await modelsFactory.surveyModel.findById(survey.id)
+
+            if (!foundRes) { //fix me, more concise
+                throw new Error('no res')
+            }
+            expect(foundRes.name).to.equal(newName)
+        })
+    })
     
     describe('Delete survey', () => {
         beforeEach(async () => {
@@ -66,12 +92,12 @@ describe('Survey test', () => {
 
             await survey.destroy()
 
-            const foundDeletionJob = modelsFactory.deletionJobModel.findOne({
+            const foundDeletionJob = await modelsFactory.deletionJobModel.findOne({
                 where: {
                     table_name: MemberSurveyPermissionDefinition.memberSurveyPermissionTableName,
                     error_count: 0,
                     payload: JSON.stringify({
-                        survey_id: getInstanceId(survey) //bug! validate payload after
+                        survey_id: getInstanceId(survey) 
                     })
                 }
             })

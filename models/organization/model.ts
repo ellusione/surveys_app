@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as SurveyDefinition from '../survey/definition'
 import {dbOptions, getInstanceId} from '../helpers';
@@ -10,27 +11,36 @@ const sequelizeAttributes = {
 }
 
 export default (
-    sequelize: Sequelize.Sequelize, 
-    memberModel: Sequelize.Model<MemberDefinition.MemberInstance, MemberDefinition.MemberAttributes>,
-    surveyModel: Sequelize.Model<SurveyDefinition.SurveyInstance, SurveyDefinition.SurveyAttributes>
+    sequelize: Sequelize.Sequelize,
+    deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
     const options = Object.assign({}, dbOptions, {
         hooks: {
-            //todo make a worker
+            beforeCreate: (organization: Definition.OrganizationInstance) => {
+                if (organization.changed('id')) {
+                    throw new Error('cannot change id of organization')
+                }
+            },
+            beforeUpdate: (organization: Definition.OrganizationInstance) => {
+                if (organization.changed('id')) {
+                    throw new Error('cannot change id of organization')
+                }
+            },
             afterDestroy: (organization: Definition.OrganizationInstance) => {
-                const org_id = getInstanceId(organization)
-
-                memberModel.destroy({
-                    where: {
-                        organization_id: org_id
-                    }
+                const payload = JSON.stringify({
+                    organization_id: getInstanceId(organization)
                 })
 
-                surveyModel.destroy({
-                    where: {
-                        organization_id: org_id
+                deletionJobModel.bulkCreate([
+                    {
+                        table_name: MemberDefinition.memberTableName,
+                        payload
+                    },
+                    {
+                        table_name: SurveyDefinition.surveyTableName,
+                        payload
                     }
-                })
+                ])
             }
         }
     })

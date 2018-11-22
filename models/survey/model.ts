@@ -1,5 +1,5 @@
 import Sequelize from 'sequelize'
-import * as DeletionJob from '../deletion_job/definition'
+import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as UserDefinition from '../user/definition'
 import * as OrganizationDefinition from '../organization/definition';
 import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
@@ -27,11 +27,10 @@ export const sequelizeAttributes = {
 
 export default (
     sequelize: Sequelize.Sequelize,
-    deletionJobModel: Sequelize.Model<DeletionJob.DeletionJobInstance, DeletionJob.DeletionJobAttributes>
+    deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
     const options = Object.assign({}, dbOptions, {
         hooks: {
-            //todo make a worker
             afterDestroy: (survey: Definition.SurveyInstance) => {
                 deletionJobModel.create({
                     table_name: MemberSurveyPermissionDefinition.memberSurveyPermissionTableName,
@@ -39,14 +38,6 @@ export default (
                         survey_id: getInstanceId(survey)
                     })
                 })
-
-                // const survey_id = getInstanceId(survey)
-
-                // memberSurveyPermissionsModel.destroy({
-                //     where: {
-                //         survey_id: survey_id
-                //     }
-                // })
             }
         }
     })

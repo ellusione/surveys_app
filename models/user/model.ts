@@ -1,7 +1,8 @@
 import Sequelize from 'sequelize'
+import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
-import { BaseAttributes, dbOptions, getInstanceId } from '../helpers';
+import { dbOptions, getInstanceId } from '../helpers';
 import * as Definition from './definition'
 
 const sequelizeAttributes = {
@@ -11,26 +12,26 @@ const sequelizeAttributes = {
 
 export default (
     sequelize: Sequelize.Sequelize,
-    memberModel: Sequelize.Model<MemberDefinition.MemberInstance, MemberDefinition.MemberAttributes>,
-    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermissionDefinition.MemberSurveyPermissionInstance, MemberSurveyPermissionDefinition.MemberSurveyPermissionAttributes>
+    deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
     const options = Object.assign({}, dbOptions, {
         hooks: {
             //change creator of survey also?
-            //todo make a worker
             afterDestroy: (user: Definition.UserInstance) => {
-                const user_id = getInstanceId(user)
+                const payload = JSON.stringify({
+                    user_id: getInstanceId(user)
+                })
 
-                memberModel.destroy({
-                    where: {
-                        user_id: user_id
+                deletionJobModel.bulkCreate([
+                    {
+                        table_name:  MemberDefinition.memberTableName,
+                        payload
+                    },
+                    {
+                        table_name:  MemberSurveyPermissionDefinition.memberSurveyPermissionTableName,
+                        payload
                     }
-                })
-                memberSurveyPermissionsModel.destroy({
-                    where: {
-                        user_id: user_id
-                    }
-                })
+                ])
             }
         }
     })

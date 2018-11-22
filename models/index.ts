@@ -44,7 +44,7 @@ export class Factory {
         this.memberModel = Member.default(sequelize)
         this.memberSurveyPermissionModel = MemberSurveyPermission.default(sequelize)
         this.surveyModel = Survey.default(sequelize, this.deletionJobModel)
-        this.userModel = User.default(sequelize, this.memberModel, this.memberSurveyPermissionModel)
-        this.organizationModel = Organization.default(sequelize, this.memberModel, this.surveyModel)
+        this.userModel = User.default(sequelize, this.deletionJobModel)
+        this.organizationModel = Organization.default(sequelize, this.deletionJobModel)
     }
 }
