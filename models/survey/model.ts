@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import lodash from 'lodash'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as UserDefinition from '../user/definition'
 import * as OrganizationDefinition from '../organization/definition';
@@ -29,7 +30,7 @@ export default (
     sequelize: Sequelize.Sequelize,
     deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
-    const options = Object.assign({}, dbOptions, {
+    const options = lodash.merge({}, dbOptions, {
         hooks: {
             afterDestroy: (survey: Definition.SurveyInstance) => {
                 deletionJobModel.create({

@@ -2,11 +2,15 @@ import Sequelize from 'sequelize'
 import * as  OrganizationDefinition from '../organization/definition';
 import * as UserDefinition from '../user/definition'
 import {Role} from '../../roles'
-import {BaseAttributes, dbOptions} from '../helpers';
+import {dbOptions} from '../helpers';
 import * as Definition from './definition'
 
 const sequelizeAttributes = {
-    id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
+    id: {
+        type: Sequelize.INTEGER, 
+        primaryKey: true, 
+        autoIncrement: true
+    },
     user_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 

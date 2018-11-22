@@ -1,7 +1,7 @@
 import Sequelize from 'sequelize'
 import * as  SurveyDefinition from '../survey/definition';
 import * as UserDefinition from '../user/definition'
-import {BaseAttributes, dbOptions} from '../helpers';
+import {BaseAttributes} from '../helpers';
 
 export const memberSurveyPermissionTableName = 'member_survey_permissions'
 

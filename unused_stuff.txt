@@ -113,3 +113,33 @@ d({name: 's'})
 
 
     //model.Instance().getId = (id: number|undefined) => 1
+
+ (organization: Definition.OrganizationInstance) => {
+                if (organization.changed('id')) {
+                    throw new Error('cannot change id of organization')
+                }
+            },
+            beforeUpdate: (organization: Definition.OrganizationInstance) => {
+                if (organization.changed('id')) {
+                    throw new Error('cannot change id of organization')
+                }
+            },
+
+                    it.only('Should throw error on invalid id update', async () => {
+            let error
+            
+            try {
+                await survey.update({id: 123})
+            } catch (err) {
+                error = err
+            }
+
+            expect(error).to.exist
+        })
+
+
+function beforeValidate (instance: BaseInstance): void {
+    if (instance.changed('id')) {
+        throw new Error(`cannot updated id on ${instance.Model.name}`)
+    }
+}

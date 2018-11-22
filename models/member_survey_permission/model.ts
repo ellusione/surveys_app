@@ -3,7 +3,7 @@ import * as  SurveyDefinition from '../survey/definition';
 import * as UserDefinition from '../user/definition'
 import {Role} from '../../roles'
 import * as Definition from './definition'
-import {BaseAttributes, dbOptions} from '../helpers';
+import {dbOptions} from '../helpers';
 
 const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},

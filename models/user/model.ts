@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import lodash from 'lodash'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
@@ -14,7 +15,7 @@ export default (
     sequelize: Sequelize.Sequelize,
     deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
-    const options = Object.assign({}, dbOptions, {
+    const options = lodash.merge({}, dbOptions, {
         hooks: {
             //change creator of survey also?
             afterDestroy: (user: Definition.UserInstance) => {

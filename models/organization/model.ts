@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import lodash from 'lodash'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as SurveyDefinition from '../survey/definition'
@@ -14,18 +15,8 @@ export default (
     sequelize: Sequelize.Sequelize,
     deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
-    const options = Object.assign({}, dbOptions, {
+    const options = lodash.merge({}, dbOptions, {
         hooks: {
-            beforeCreate: (organization: Definition.OrganizationInstance) => {
-                if (organization.changed('id')) {
-                    throw new Error('cannot change id of organization')
-                }
-            },
-            beforeUpdate: (organization: Definition.OrganizationInstance) => {
-                if (organization.changed('id')) {
-                    throw new Error('cannot change id of organization')
-                }
-            },
             afterDestroy: (organization: Definition.OrganizationInstance) => {
                 const payload = JSON.stringify({
                     organization_id: getInstanceId(organization)

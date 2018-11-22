@@ -46,9 +46,17 @@ describe('Survey test', () => {
     })
 
     describe('Update survey', () => {
-        it('Should throw error on invalid creator_id update', () => {
+        it('Should throw error on invalid creator_id update', async () => {
+            let error
+
             const fakeCreatorId = survey.creator_id + Math.random()*100
-            expect(survey.update({creator_id: fakeCreatorId})).to.eventually.throw(Error)
+            try {
+                await survey.update({creator_id: fakeCreatorId})
+            } catch (err) {
+                error = err
+            }
+
+            expect(error).to.exist
         })
 
         it('Should save survey on valid name update', async () => {
