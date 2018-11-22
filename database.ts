@@ -1,17 +1,17 @@
 
 import Sequelize from 'sequelize'
-import ModelsFactory from './models'
+import * as Models from './models'
 
 const sequelize = new Sequelize(
     'postgres://postgres:123@localhost:5432/surveys',
     { dialect: 'postgres' }
 )
 
-export async function initDB(): Promise<ModelsFactory> {
+export async function initDB(): Promise<Models.ModelsFactory> {
     await sequelize.authenticate()
     console.log("DB connection successful")
     
-    const modelsFactory = await new ModelsFactory(sequelize)
+    const modelsFactory = await new Models.ModelsFactory(sequelize)
     await sequelize.sync({force: true})
     return modelsFactory
 }

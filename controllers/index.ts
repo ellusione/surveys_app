@@ -1,7 +1,7 @@
 import initSurveysController from './surveys'
 import Express from 'express';
-import ModelsFactory from '../models'
+import * as Models from '../models'
 
-export default function initRoutes (app: Express.Express, modelsFactory: ModelsFactory) {
+export default function initRoutes (app: Express.Express, modelsFactory: Models.ModelsFactory) {
     initSurveysController(app, modelsFactory)
 }

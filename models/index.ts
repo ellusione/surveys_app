@@ -7,17 +7,24 @@ import * as Organization from './organization'
 import * as MemberSurveyPermission from './member_survey_permission'
 import Sequelize from 'sequelize';
 
-export default class ModelsFactory {
+export {Types as SurveyTypes} from  './survey' 
+export {Types as UserTypes} from './user'
+export {Types as MemberTypes} from './member'
+export {Types as OrganizationTypes} from './organization'
+export {Types as MemberSurveyTypes} from './member_survey_permission'
 
-    surveyModel: Sequelize.Model<Survey.Instance, Survey.Attributes>
 
-    userModel: Sequelize.Model<User.Instance, User.Attributes>
+export class ModelsFactory {
 
-    memberModel: Sequelize.Model<Member.Instance, Member.Attributes>
+    surveyModel: Sequelize.Model<Survey.Types.Instance, Survey.Types.Attributes>
 
-    organizationModel: Sequelize.Model<Organization.Instance, Organization.Attributes>
+    userModel: Sequelize.Model<User.Types.Instance, User.Types.Attributes>
 
-    memberSurveyPermissionModel: Sequelize.Model<MemberSurveyPermission.Instance, MemberSurveyPermission.Attributes>
+    memberModel: Sequelize.Model<Member.Types.Instance, Member.Types.Attributes>
+
+    organizationModel: Sequelize.Model<Organization.Types.Instance, Organization.Types.Attributes>
+
+    memberSurveyPermissionModel: Sequelize.Model<MemberSurveyPermission.Types.Instance, MemberSurveyPermission.Types.Attributes>
 
     constructor (sequelize: Sequelize.Sequelize) {
         this.memberModel = Member.default(sequelize)

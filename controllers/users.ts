@@ -1,11 +1,11 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
-import ModelsFactory from '../models'
+import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import * as User from '../models/user'
 
-export default function initUsersController(app: Express.Express, modelsFactory: ModelsFactory) {
+export default function initUsersController(app: Express.Express, modelsFactory: Models.ModelsFactory) {
 
     app.post('users', [
         Validator.body('name').isString(),

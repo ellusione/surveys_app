@@ -1,17 +1,15 @@
-import ModelsFactory from '../models'
+import * as Models from '../models'
 import {getInstanceId} from '../models/helpers'
 import {initDB} from '../database'
-import * as User from '../models/user'
-import * as Organization from '../models/organization'
-import * as Member from '../models/member'
 import * as Roles from '../roles'
 import { expect } from 'chai';
 
 describe('Survey test', () => {
-    let modelsFactory: ModelsFactory
-    let user: User.Instance
-    let organization: Organization.Instance
-    let member: Member.Instance
+
+    let modelsFactory: Models.ModelsFactory
+    let user: Models.UserTypes.Instance
+    let organization: Models.OrganizationTypes.Instance
+    let member: Models.MemberTypes.Instance
 
     before('Init db', async () => {
         modelsFactory = await initDB()
@@ -25,19 +23,66 @@ describe('Survey test', () => {
         })
     })
 
-    it('Should save survey', async () => {
+    describe('Create survey', () => {
+        let survey: Models.SurveyTypes.Instance
+
+        beforeEach(async () => {
+            survey = await modelsFactory.surveyModel.create({
+                name: 'a', creator_id: getInstanceId(user), organization_id: getInstanceId(organization)
+            })
+        })
+        it('Should save survey', async () => {
+            const result = await modelsFactory.surveyModel.create({
+                name: 'a', creator_id: getInstanceId(user), organization_id: getInstanceId(organization)
+            })
+            expect(result.creator_id).to.exist
+            expect(result.creator_id).to.equal(user.id)
+
+            expect(result.name).to.equal('a')
+
+            expect(result.organization_id).to.exist
+            expect(result.organization_id).to.equal(organization.id)
+
+            expect(result.id).to.exist
+
+            const foundRes = await modelsFactory.surveyModel.findById(result.id)
+
+            expect(foundRes).to.exist
+        })
+    })
+
+    it('Should delete survey', async () => {
         const result = await modelsFactory.surveyModel.create({
             name: 'a', creator_id: getInstanceId(user), organization_id: getInstanceId(organization)
         })
-        expect(result.creator_id).to.exist
-        expect(result.creator_id).to.equal(user.id)
 
-        expect(result.name).to.equal('a')
+        await result.destroy()
 
-        expect(result.organization_id).to.exist
-        expect(result.organization_id).to.equal(organization.id)
+        const foundRes = await modelsFactory.surveyModel.findById(result.id)
 
-        expect(result.id).to.exist
+        expect(foundRes).to.not.exist
+    })
+
+    it('Delete survey should call hook', async () => {
+        const result = await modelsFactory.surveyModel.create({
+            name: 'a', creator_id: getInstanceId(user), organization_id: getInstanceId(organization)
+        })
+
+       const memberSurveyPermission = await modelsFactory.memberSurveyPermissionModel.create({
+            user_id: getInstanceId(user),
+            survey_id: getInstanceId(result),
+            role_id: Roles.adminRole.id
+        })
+
+        const foundPermission = await modelsFactory.memberSurveyPermissionModel.findById(memberSurveyPermission.id)
+
+        expect(foundPermission).to.exist
+
+        await result.destroy()
+
+        const foundPermissionAfterDelete = await modelsFactory.memberSurveyPermissionModel.findById(memberSurveyPermission.id)
+
+        expect(foundPermissionAfterDelete).to.not.exist
     })
 
 })

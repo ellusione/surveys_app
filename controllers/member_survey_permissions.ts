@@ -1,10 +1,10 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
-import ModelsFactory from '../models'
+import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import {Role} from '../roles'
 
-export default function initMemberSurveyPermissionsController(app: Express.Express, modelsFactory: ModelsFactory) {
+export default function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Models.ModelsFactory) {
 
     app.post('/surveys/:survey_id/users/:user_id/permissions', [
         Validator.param('survey_id').isInt({gt: 0}),

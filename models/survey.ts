@@ -1,49 +1,50 @@
 import Sequelize from 'sequelize'
 import * as User from './user'
 import * as Organization from './organization';
-import * as MemberSurveyPermissions from './member_survey_permission'
+import * as MemberSurveyPermission from './member_survey_permission'
 import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
-export const tableName = 'surveys'
+export module Types {
+    export const tableName = 'surveys'
 
-export interface Attributes extends BaseAttributes {
-    id?: number,
-    name: string,
-    creator_id: number,
-    creator?: User.Attributes,
-    organization_id: number,
-    organization?: Organization.Attributes
+    export interface Attributes extends BaseAttributes {
+        id?: number,
+        name: string,
+        creator_id: number,
+        creator?: User.Types.Attributes,
+        organization_id: number,
+        organization?: Organization.Types.Attributes
+    }
+
+    export type Instance = Sequelize.Instance<Attributes> & Attributes 
 }
-
-export type Instance = Sequelize.Instance<Attributes> & Attributes 
-
-export const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
+export const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false},
     creator_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {
-            model: User.tableName, key: 'id'  //fix tablename
+            model: User.Types.tableName, key: 'id'  //fix tablename
         }
     },
     organization_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {
-            model: Organization.tableName, key: 'id' 
+            model: Organization.Types.tableName, key: 'id' 
         }
     }
 }
 
 export default (
     sequelize: Sequelize.Sequelize,
-    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermissions.Instance, MemberSurveyPermissions.Attributes>
+    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermission.Types.Instance, MemberSurveyPermission.Types.Attributes>
 ) => {
     const options = Object.assign({}, dbOptions, {
         hooks: {
             //todo make a worker
-            afterDelete: (survey: Instance) => {
+            afterDelete: (survey: Types.Instance) => {
                 const survey_id = getInstanceId(survey)
 
                 memberSurveyPermissionsModel.destroy({
@@ -55,8 +56,8 @@ export default (
         }
     })
 
-    const model =  sequelize.define<Instance, Attributes>(
-        tableName, sequelizeAttributes, options
+    const model =  sequelize.define<Types.Instance, Types.Attributes>(
+        Types.tableName, sequelizeAttributes, options
     )
 
     model.associate = models => {
@@ -69,8 +70,5 @@ export default (
         model.hasMany(models.member_survey_permissions)
     }
 
-  //  model.Instance().getId = (id: number|undefined) => 1
-
-    
     return model
 }

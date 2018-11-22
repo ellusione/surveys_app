@@ -1,33 +1,35 @@
 import Sequelize from 'sequelize'
 import * as Survey from './survey'
 import * as Member from './member'
-import * as MemberSurveyPermissions from './member_survey_permission'
+import * as MemberSurveyPermission from './member_survey_permission'
 import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
-export const tableName = 'users'
+export module Types {
+    export const tableName = 'users'
 
-export interface Attributes extends BaseAttributes {
-    id?: number,
-    name: string
+    export interface Attributes extends BaseAttributes {
+        id?: number,
+        name: string
+    }
+
+    export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseAttributes
 }
 
-const sequelizeAttributes: Sequelize.DefineModelAttributes<Attributes> = {
+const sequelizeUserAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false}
 }
 
-export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseAttributes
-
 export default (
     sequelize: Sequelize.Sequelize, 
-    memberModel: Sequelize.Model<Member.Instance, Member.Attributes>,
-    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermissions.Instance, MemberSurveyPermissions.Attributes>
-) => {
+    memberModel: Sequelize.Model<Member.Types.Instance, Member.Types.Attributes>,
+    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermission.Types.Instance, MemberSurveyPermission.Types.Attributes>
+) =>{
     const options = Object.assign({}, dbOptions, {
         hooks: {
             //change creator of survey also?
             //todo make a worker
-            afterDelete: (user: Instance) => {
+            afterDelete: (user: Types.Instance) => {
                 const user_id = getInstanceId(user)
 
                 memberModel.destroy({
@@ -44,8 +46,8 @@ export default (
         }
     })
 
-    const model =  sequelize.define<Instance, Attributes>(
-        tableName, sequelizeAttributes, options
+    const model =  sequelize.define<Types.Instance, Types.Attributes>(
+        Types.tableName, sequelizeUserAttributes, options
     ) 
 
     model.associate = models => {

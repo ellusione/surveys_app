@@ -1,11 +1,11 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
-import ModelsFactory from '../models'
+import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capabilities} from '../roles'
 
-export default function initSurveysController(app: Express.Express, modelsFactory: ModelsFactory) {
+export default function initSurveysController(app: Express.Express, modelsFactory: Models.ModelsFactory) {
     
     //add authentication. user and org in auth
     app.post('surveys', [
