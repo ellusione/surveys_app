@@ -13,6 +13,8 @@ export async function initDB(): Promise<Models.Factory> {
     
     const modelsFactory = await new Models.Factory(sequelize)
     await sequelize.sync({force: true})
+
+    console.log("Sequelize sync successful")
     return modelsFactory
 }
 

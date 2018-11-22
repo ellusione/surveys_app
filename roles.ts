@@ -1,5 +1,3 @@
-import member from "./models/member";
-
 export enum Capabilities {
     View = 1,
     Edit,

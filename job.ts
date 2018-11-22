@@ -1,5 +1,5 @@
 import {initDB} from './database'
-import * as Job from './models/deletion_job'
+import * as JobDefinition from './models/deletion_job/definition'
 import Http from 'http';
 
 const port = process.env.JOB_PORT || 3100
@@ -10,7 +10,7 @@ async function init() {
     const server = new Http.Server()
     server.listen(port)
 
-    async function process (job: Job.DeletionJobInstance) {
+    async function process (job: JobDefinition.DeletionJobInstance) {
         const model = modelsFactory.sequelize.models[job.table_name]
 
         if (!model) {

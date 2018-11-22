@@ -17,6 +17,5 @@ export function getInstanceId (instance: BaseInstance): number {
 export const dbOptions = {
     timestamps: true,
     freezeTableName: true,
-    paranoid: true,
-    operatorsAliases: {}
+    paranoid: true
 }

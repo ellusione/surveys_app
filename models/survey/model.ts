@@ -1,38 +1,26 @@
 import Sequelize from 'sequelize'
-import * as DeletionJob from './deletion_job'
-import * as User from './user'
-import * as Organization from './organization';
-import * as MemberSurveyPermission from './member_survey_permission'
-import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
+import * as DeletionJob from '../deletion_job/definition'
+import * as UserDefinition from '../user/definition'
+import * as OrganizationDefinition from '../organization/definition';
+import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
+import {dbOptions, getInstanceId} from '../helpers';
+import * as Definition from './definition'
 
-export const surveyTableName = 'surveys'
-
-export interface SurveyAttributes extends BaseAttributes {
-    id?: number,
-    name: string,
-    creator_id: number,
-    creator?: User.UserAttributes,
-    organization_id: number,
-    organization?: Organization.OrganizationAttributes
-}
-
-export type SurveyInstance = Sequelize.Instance<SurveyAttributes> & SurveyAttributes 
-
-export const sequelizeAttributes: Sequelize.DefineModelAttributes<SurveyAttributes> = {
+export const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false},
     creator_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {
-            model: User.userTableName, key: 'id'  //fix tablename
+            model: UserDefinition.userTableName, key: 'id'  //fix tablename
         }
     },
     organization_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
         references: {
-            model: Organization.organizationTableName, key: 'id' 
+            model: OrganizationDefinition.organizationTableName, key: 'id' 
         }
     }
 }
@@ -44,9 +32,9 @@ export default (
     const options = Object.assign({}, dbOptions, {
         hooks: {
             //todo make a worker
-            afterDelete: (survey: SurveyInstance) => {
+            afterDestroy: (survey: Definition.SurveyInstance) => {
                 deletionJobModel.create({
-                    table_name: MemberSurveyPermission.memberSurveyPermissionTableName,
+                    table_name: MemberSurveyPermissionDefinition.memberSurveyPermissionTableName,
                     payload: JSON.stringify({
                         survey_id: getInstanceId(survey)
                     })
@@ -63,8 +51,8 @@ export default (
         }
     })
 
-    const model =  sequelize.define<SurveyInstance, SurveyAttributes>(
-        surveyTableName, sequelizeAttributes, options
+    const model =  sequelize.define<Definition.SurveyInstance, Definition.SurveyAttributes>(
+        Definition.surveyTableName, sequelizeAttributes, options
     )
 
     model.associate = models => {

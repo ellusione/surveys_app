@@ -3,7 +3,6 @@ import Validator from 'express-validator/check'
 import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
-import * as User from '../models/user'
 
 export default function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
 
