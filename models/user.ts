@@ -15,7 +15,7 @@ export module Types {
     export type Instance = Sequelize.Instance<Attributes> & Attributes & BaseAttributes
 }
 
-const sequelizeUserAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
+const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attributes> = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: Sequelize.STRING, allowNull: false}
 }
@@ -47,7 +47,7 @@ export default (
     })
 
     const model =  sequelize.define<Types.Instance, Types.Attributes>(
-        Types.tableName, sequelizeUserAttributes, options
+        Types.tableName, sequelizeAttributes, options
     ) 
 
     model.associate = models => {

@@ -4,17 +4,24 @@ import {initDB} from '../database'
 import * as Roles from '../roles'
 import { expect } from 'chai';
 
-describe('Survey test', () => {
+describe('User test', () => {
 
     let modelsFactory: Models.Factory
     let user: Models.UserTypes.Instance
     let organization: Models.OrganizationTypes.Instance
+    let member: Models.MemberTypes.Instance
     let survey: Models.SurveyTypes.Instance
 
     before('Init db', async () => {
         modelsFactory = await initDB()
         user = await modelsFactory.userModel.create({name: 'user a'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
+        
+        member = await modelsFactory.memberModel.create({
+            user_id: getInstanceId(user), 
+            organization_id: getInstanceId(organization), 
+            role_id: Roles.memberRole.id
+        })
     })
 
     beforeEach(async () => {
@@ -24,7 +31,7 @@ describe('Survey test', () => {
     })
 
     describe('Find survey', () => {
-        it('Should find saved survey', async () => {
+        it('Should save survey', async () => {
             expect(survey.creator_id).to.exist
             expect(survey.creator_id).to.equal(user.id)
 

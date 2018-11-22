@@ -4,7 +4,7 @@ import * as Survey from './survey'
 import {BaseAttributes, dbOptions, getInstanceId} from './helpers';
 
 export module Types {
-export const tableName = 'organizations'
+    export const tableName = 'organizations'
 
     export interface Attributes extends BaseAttributes {
         id?: number,

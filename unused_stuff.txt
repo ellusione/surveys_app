@@ -48,7 +48,7 @@ interface BaseAttributes3 {
 type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes
 type BaseInstance2 = Sequelize.Instance<BaseAttributes2> & BaseAttributes2
 
-export default class ModelsFactory {
+export default class Factory {
 
     static validateHasId(instance: BaseInstance) {
         if (!instance.id) {
@@ -63,7 +63,7 @@ export default class ModelsFactory {
 }
 type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes
 
-export default class ModelsFactory {
+export default class Factory {
 
     static validateHasId<T extends BaseInstance>(instance: T) {
         if (!instance.id) {

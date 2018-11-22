@@ -5,7 +5,7 @@ import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capabilities} from '../roles'
 
-export default function initSurveysController(app: Express.Express, modelsFactory: Models.ModelsFactory) {
+export default function initSurveysController(app: Express.Express, modelsFactory: Models.Factory) {
     
     //add authentication. user and org in auth
     app.post('surveys', [

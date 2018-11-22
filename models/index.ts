@@ -1,6 +1,6 @@
 
-import * as Database from '../database'
 import * as Survey from './survey'
+import * as Job from './job'
 import * as User from './user'
 import * as Member from './member'
 import * as Organization from './organization'
@@ -11,10 +11,10 @@ export {Types as SurveyTypes} from  './survey'
 export {Types as UserTypes} from './user'
 export {Types as MemberTypes} from './member'
 export {Types as OrganizationTypes} from './organization'
-export {Types as MemberSurveyTypes} from './member_survey_permission'
+export {Types as MemberSurveyPermissionTypes} from './member_survey_permission'
 
 
-export class ModelsFactory {
+export class Factory {
 
     surveyModel: Sequelize.Model<Survey.Types.Instance, Survey.Types.Attributes>
 
@@ -27,9 +27,10 @@ export class ModelsFactory {
     memberSurveyPermissionModel: Sequelize.Model<MemberSurveyPermission.Types.Instance, MemberSurveyPermission.Types.Attributes>
 
     constructor (sequelize: Sequelize.Sequelize) {
+        const jobModel = Job.default(sequelize)
         this.memberModel = Member.default(sequelize)
         this.memberSurveyPermissionModel = MemberSurveyPermission.default(sequelize)
-        this.surveyModel = Survey.default(sequelize, this.memberSurveyPermissionModel)
+        this.surveyModel = Survey.default(sequelize, jobModel, this.memberSurveyPermissionModel)
         this.userModel = User.default(sequelize, this.memberModel, this.memberSurveyPermissionModel)
         this.organizationModel = Organization.default(sequelize, this.memberModel, this.surveyModel)
     }

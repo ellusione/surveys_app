@@ -5,7 +5,7 @@ import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role} from '../roles'
 
-export default function initMembersController(app: Express.Express, modelsFactory: Models.ModelsFactory) {
+export default function initMembersController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('members', [
         Validator.body('user_id').isInt({gt: 0}),

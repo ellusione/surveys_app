@@ -7,11 +7,11 @@ const sequelize = new Sequelize(
     { dialect: 'postgres' }
 )
 
-export async function initDB(): Promise<Models.ModelsFactory> {
+export async function initDB(): Promise<Models.Factory> {
     await sequelize.authenticate()
     console.log("DB connection successful")
     
-    const modelsFactory = await new Models.ModelsFactory(sequelize)
+    const modelsFactory = await new Models.Factory(sequelize)
     await sequelize.sync({force: true})
     return modelsFactory
 }

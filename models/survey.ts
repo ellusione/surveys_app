@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import * as Job from './job'
 import * as User from './user'
 import * as Organization from './organization';
 import * as MemberSurveyPermission from './member_survey_permission'
@@ -39,12 +40,19 @@ export const sequelizeAttributes: Sequelize.DefineModelAttributes<Types.Attribut
 
 export default (
     sequelize: Sequelize.Sequelize,
-    memberSurveyPermissionsModel: Sequelize.Model<MemberSurveyPermission.Types.Instance, MemberSurveyPermission.Types.Attributes>
+    jobModel: Sequelize.Model<Job.Types.Instance, Job.Types.Attributes>
 ) => {
     const options = Object.assign({}, dbOptions, {
         hooks: {
             //todo make a worker
             afterDelete: (survey: Types.Instance) => {
+                jobModel.create({
+                    table_name: MemberSurveyPermission.Types.tableName,
+                    payload: JSON.stringify({
+                        survey_id: getInstanceId(survey)
+                    })
+                })
+
                 const survey_id = getInstanceId(survey)
 
                 memberSurveyPermissionsModel.destroy({
