@@ -19,10 +19,8 @@ export function errorHandlingFn(
 ) {
     const errorJson = {errors: [error]}
 
-    switch (error.name) {
-        case Errors.NotFoundError.errorName:
-            return res.status(Errors.NotFoundError.statusCode).json(errorJson)
-        default: 
-            return res.status(500).json(errorJson)
+    if (error instanceof Errors.BaseError) {
+        return res.status(error.statusCode).json(errorJson)
     }
+    return res.status(500).json(errorJson)
 }

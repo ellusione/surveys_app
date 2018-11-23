@@ -30,9 +30,9 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         const role = Role.findByRoleId(member.role_id)
 
         if (!role.capabilities.get(Capabilities.Create)) {
-            return res.status(403).send(
+            return next(new Errors.ForbiddenError(
                 'Member not authorized to create survey'
-            )
+            ))
         }
 
         const result = await modelsFactory.surveyModel.create({
@@ -108,9 +108,9 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             })
 
             if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Edit)) {
-                return res.status(403).send(
+                return next(new Errors.ForbiddenError(
                     'Member not authorized to edit survey'
-                )
+                ))
             }
         }
         
@@ -160,14 +160,14 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             })
 
             if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Delete)) {
-                return res.status(403).send(
+                return next(new Errors.ForbiddenError(
                     'Member not authorized to delete survey'
-                )
+                ))
             }
         }
 
         const surveyId = req.params.survey_id
-        
+
         const result = await modelsFactory.surveyModel
             .destroy({
                 where: {

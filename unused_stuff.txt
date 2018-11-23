@@ -168,3 +168,7 @@ export function sendResponseFn(
 ) {
     res.json
 }
+
+    // if (Errors.BaseError.isPrototypeOf(error)) {
+    //     return res.status(error.statusCode).json(errorJson)
+    // }
