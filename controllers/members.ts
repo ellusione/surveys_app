@@ -13,7 +13,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
 
         const user = await modelsFactory.userModel.findById(req.body.user_id)
 
@@ -41,7 +41,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
         const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
@@ -58,7 +58,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         Validator.param('member_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.memberModel.findById(req.params.member_id)
 
         if (result) {
@@ -72,7 +72,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.memberModel.findById(req.params.member_id)
 
         if (!result) {
@@ -85,14 +85,14 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
 
         await result.update({role_id: req.body.role_id})
 
-        return res.status(200).send(result)
+        return res.json(result)
     })
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.memberModel.destroy({
             where: {
                 id: req.params.member_id

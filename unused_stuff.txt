@@ -161,3 +161,10 @@ export * from './organizations'
 export * from './member_survey_permissions'
 
  type User = {id: number, name: string, createdAt: string, updatedAt: string, deletedAt: null}
+
+
+export function sendResponseFn(
+    req: Express.Request, res: Express.Response, next: Function
+) {
+    res.json
+}

@@ -4,6 +4,7 @@ import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capabilities} from '../roles'
+import * as Errors from '../helpers/errors'
 
 export function initSurveysController(app: Express.Express, modelsFactory: Models.Factory) {
     
@@ -14,7 +15,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         Validator.body('name').isString(),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
             where: {
                 user_id: req.body.creator_id,
@@ -23,7 +24,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         })
 
         if (!member) {
-            return res.status(404).send('Member does not exist')
+            return next(new Errors.NotFoundError('member'))
         }
 
         const role = Role.findByRoleId(member.role_id)
@@ -40,7 +41,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             organization_id: req.body.organization_id
         })
 
-        return res.status(200).send(result)   
+        return res.json(result)   
     })
 
     app.get('/surveys', [
@@ -48,7 +49,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
         const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
@@ -58,21 +59,23 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             limit: limit
         })
 
-        return res.status(200).json(result) //is total correct?
+        return res.json(result) //is total correct?
     })
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
+        const surveyId = req.params.survey_id
+
         const result = await modelsFactory.surveyModel
-            .findById(req.params.survey_id)
+            .findById(surveyId)
 
         if (result) {
-            return res.status(200).json(result) 
+            return res.json(result) 
         }
-        return res.status(404)
+        return next(new Errors.NotFoundError('survey', surveyId))
     })
 
     app.patch('/surveys/:survey_id', [
@@ -81,7 +84,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
             where: {
                 user_id: req.body.user_id,
@@ -90,7 +93,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         })
 
         if (!member) {
-            return res.status(404).send('Member does not exist')
+            return next(new Errors.NotFoundError('member'))
         }
 
         const role = Role.findByRoleId(member.role_id)
@@ -111,20 +114,22 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             }
         }
         
+        const surveyId = req.params.survey_id
+
         const result = await modelsFactory.surveyModel
-            .findById(req.params.survey_id)
+            .findById(surveyId)
 
         if (!result) {
-            return res.status(404)
+            return next(new Errors.NotFoundError('survey', surveyId))
         }
 
         if (result.name === req.body.name) {
-            return res.status(200).json(result) 
+            return res.json(result) 
         }
 
         await result.update({name: req.body.name})
 
-        return res.status(200).json(result) 
+        return res.json(result) 
     })
 
     app.delete('/surveys/:survey_id', [
@@ -132,7 +137,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
             where: {
                 user_id: req.body.creator_id,
@@ -141,7 +146,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         })
 
         if (!member) {
-            return res.status(404).send('Member does not exist')
+            return next(new Errors.NotFoundError('member'))
         }
 
         const role = Role.findByRoleId(member.role_id)
@@ -161,10 +166,12 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             }
         }
 
+        const surveyId = req.params.survey_id
+        
         const result = await modelsFactory.surveyModel
             .destroy({
                 where: {
-                    id: req.params.survey_id
+                    id: surveyId
                 }
             })
 
@@ -172,6 +179,6 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             return res.status(200)
         }
 
-        return res.status(404)
+        return next(new Errors.NotFoundError('survey', surveyId))
     })
 }

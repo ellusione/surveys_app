@@ -12,7 +12,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
 
         const survey = await modelsFactory.surveyModel.findById(req.body.survey_id)
 
@@ -50,7 +50,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.param('user_id').isInt({gt: 0}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.memberSurveyPermissionModel.findAll({
             where: {
                 survey_id: req.body.survey_id,
@@ -65,7 +65,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         validationErrorHandlingFn
     ],
-    async (req: Express.Request, res: Express.Response) => {
+    async (req: Express.Request, res: Express.Response, next: Function) => {
 
         if (req.body.role_id) {
             await modelsFactory.memberSurveyPermissionModel 

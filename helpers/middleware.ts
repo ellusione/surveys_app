@@ -1,6 +1,7 @@
 
 import Express from 'express';
 import Validator from 'express-validator/check'
+import * as Errors from './errors'
 
 export function validationErrorHandlingFn (
     req: Express.Request, res: Express.Response, next: Function
@@ -18,19 +19,10 @@ export function errorHandlingFn(
 ) {
     const errorJson = {errors: [error]}
 
-    switch (error.constructor) {
-        case Errors.NotFoundError: 
-            return res.status(404).json(errorJson)
+    switch (error.name) {
+        case Errors.NotFoundError.errorName:
+            return res.status(Errors.NotFoundError.statusCode).json(errorJson)
         default: 
             return res.status(500).json(errorJson)
-    }
-}
-
-export const Errors = {
-    NotFoundError: class NotFoundError extends Error {
-        constructor (name: string, id: number) {
-            super()
-            this.message = `Cannot find ${name}:${id}`
-        }
     }
 }

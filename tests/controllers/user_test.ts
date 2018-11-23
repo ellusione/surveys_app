@@ -28,7 +28,7 @@ describe('Survey test', () => {
             expect(res.body.errors.length).to.equal(1)
         })
 
-        it.only('User created with proper req body', async () => {
+        it('User created with proper req body', async () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/users',
                 method: 'POST',

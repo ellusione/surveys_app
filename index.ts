@@ -20,9 +20,9 @@ export async function init() {
 
     app.use(Express.json())
 
-    app.use(errorHandlingFn)
-
     initRoutes(app, modelsFactory)
+
+    app.use(errorHandlingFn)
 
     console.log("Done initialzing routes")
 }
