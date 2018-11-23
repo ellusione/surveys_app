@@ -1,19 +1,19 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import * as Models from '../models'
-import {validationErrorHandlingFn} from '../helpers/middleware'
+import {validationErrorHandlingFn, Errors} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 
 export function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
 
-    app.post('users', [
+    app.post('/users', [
         Validator.body('name').isString(),
         validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response) => {
         const result = await modelsFactory.userModel.create({name: req.body.name})
 
-        return res.status(200).send(result)
+        res.send(result)
     })
 
     app.get('/users', [
@@ -41,9 +41,11 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
         const result = await modelsFactory.userModel.findById(req.params.user_id)
         
         if (result) {
-            return res.status(200).json(result) 
+            return res.json(result) 
         }
-        return res.status(404)
+        
+        throw new Errors.NotFoundError('user', req.params.user_id)
+       // return res.status(404).json({errors: [Errors.NotFoundError('user', req.params.user_id)]})
     })
 
     app.patch('/users/:user_id', [

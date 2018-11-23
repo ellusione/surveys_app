@@ -42,7 +42,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                 role_id: req.body.role_id
             })
 
-        return res.status(200).json(result) 
+        return res.json(result) 
     })
     
     app.get('/surveys/:survey_id/users/:user_id/permissions', [
@@ -58,7 +58,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             }
         })
 
-        return res.status(200).json(result) 
+        res.json(result) 
     })
 
     app.delete('/surveys/:survey_id/users/:user_id/permissions', [
@@ -77,7 +77,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                     }
                 })
 
-            return res.status(200)
+            return res.json('success')
         }
 
         await modelsFactory.memberSurveyPermissionModel 
@@ -88,7 +88,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                 }
             })
 
-        return res.status(200)
+        return res.json('success')
     })
 
 }

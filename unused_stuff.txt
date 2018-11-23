@@ -159,3 +159,5 @@ export * from './users'
 export * from './members'
 export * from './organizations'
 export * from './member_survey_permissions'
+
+ type User = {id: number, name: string, createdAt: string, updatedAt: string, deletedAt: null}

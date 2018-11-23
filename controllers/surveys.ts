@@ -8,7 +8,7 @@ import {Role, Capabilities} from '../roles'
 export function initSurveysController(app: Express.Express, modelsFactory: Models.Factory) {
     
     //add authentication. user and org in auth
-    app.post('surveys', [
+    app.post('/surveys', [
         Validator.body('creator_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),

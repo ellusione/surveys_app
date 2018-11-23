@@ -19,3 +19,5 @@ export const dbOptions = {
     freezeTableName: true,
     paranoid: true
 }
+
+

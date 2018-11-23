@@ -7,7 +7,7 @@ import {Role, Capabilities} from '../roles'
 
 export function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
 
-    app.post('organizations', [
+    app.post('/organizations', [
         Validator.body('name').isString(),
         validationErrorHandlingFn
     ],

@@ -49,7 +49,8 @@ describe('Survey test', () => {
         it('Should throw error on invalid creator_id update', async () => {
             let error
 
-            const fakeCreatorId = survey.creator_id + Math.random()*100
+            const fakeCreatorId = survey.creator_id + Math.round((Math.random()*100))
+            
             try {
                 await survey.update({creator_id: fakeCreatorId})
             } catch (err) {

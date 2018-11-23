@@ -7,7 +7,7 @@ import {Role} from '../roles'
 
 export function initMembersController(app: Express.Express, modelsFactory: Models.Factory) {
 
-    app.post('members', [
+    app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
@@ -18,13 +18,13 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         const user = await modelsFactory.userModel.findById(req.body.user_id)
 
         if (!user) {
-            return res.status(404).send('User not found')
+            return res.send('User not found')
         }
 
         const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
 
         if (!organization) {
-            return res.status(404).send('Organization not found')
+            return res.send('Organization not found')
         }
 
         const result = await modelsFactory.memberModel.create({
@@ -33,7 +33,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             role_id: req.body.role_id
         })
 
-        return res.status(200).send(result)
+        return res.send(result)
     })
     
     app.get('/members', [
@@ -51,7 +51,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             limit: limit
         })
 
-        return res.status(200).json(result) //is total correct?
+        res.json(result) //is total correct?
     })
 
     app.get('/members/:member_id', [
@@ -62,7 +62,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         const result = await modelsFactory.memberModel.findById(req.params.member_id)
 
         if (result) {
-            return res.status(200).json(result) 
+            res.json(result) 
         }
         return res.status(404)
     })
@@ -80,7 +80,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
         }
 
         if (result.role_id === req.body.role_id) {
-            return res.status(200).send(result)
+            res.send(result)
         }
 
         await result.update({role_id: req.body.role_id})
