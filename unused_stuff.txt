@@ -143,3 +143,19 @@ function beforeValidate (instance: BaseInstance): void {
         throw new Error(`cannot updated id on ${instance.Model.name}`)
     }
 }
+
+const pRequest = util.promisify(request.post)
+        
+       const b= pRequest({
+            url:'http://localhost:3000/users',
+            method: 'POST',
+            body: {name: 'a'},
+            json: true
+        })
+
+
+export * from './surveys'
+export * from './users'
+export * from './members'
+export * from './organizations'
+export * from './member_survey_permissions'

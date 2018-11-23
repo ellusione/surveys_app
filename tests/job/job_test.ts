@@ -1,8 +1,8 @@
-import * as Models from '../models'
-import {getInstanceId} from '../models/helpers'
-import {initDB} from '../database'
-import * as Roles from '../roles'
-import {getDeletionRunnerFn} from '../job'
+import * as Models from '../../models'
+import {getInstanceId} from '../../models/helpers'
+import {initDB} from '../../database'
+import * as Roles from '../../roles'
+import {getDeletionRunnerFn} from '../../job'
 import { expect } from 'chai';
 
 describe('Survey test', () => {

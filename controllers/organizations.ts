@@ -5,7 +5,7 @@ import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capabilities} from '../roles'
 
-export default function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('organizations', [
         Validator.body('name').isString(),

@@ -1,12 +1,12 @@
 import {initDB} from './database'
 import Express from 'express';
 import Http from 'http';
-import initRoutes from './controllers'
+import {initRoutes} from './controllers'
 import {errorHandlingFn} from './helpers/middleware'
 
 const port = process.env.PORT || 3000
 
-async function init() {
+export async function init() {
     const modelsFactory = await initDB()
 
     const app = Express();
@@ -21,6 +21,8 @@ async function init() {
     initRoutes(app, modelsFactory)
 }
 
-init()
+if (require.main === module) {
+    init()
+}
 
 

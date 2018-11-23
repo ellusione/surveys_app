@@ -1,11 +1,11 @@
 import * as chai from 'chai'
 import * as uuid from 'uuid'
 chai.use(require('chai-as-promised'))
-import * as Models from '../models'
-import * as MemberSurveyPermissionDefinition from '../models/member_survey_permission/definition'
-import {getInstanceId} from '../models/helpers'
-import {initDB} from '../database'
-import * as Roles from '../roles'
+import * as Models from '../../models'
+import * as MemberSurveyPermissionDefinition from '../../models/member_survey_permission/definition'
+import {getInstanceId} from '../../models/helpers'
+import {initDB} from '../../database'
+import * as Roles from '../../roles'
 const expect = chai.expect
 
 describe('Survey test', () => {

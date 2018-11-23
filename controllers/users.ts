@@ -4,7 +4,7 @@ import * as Models from '../models'
 import {validationErrorHandlingFn} from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 
-export default function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('users', [
         Validator.body('name').isString(),
