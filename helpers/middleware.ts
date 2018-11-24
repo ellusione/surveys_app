@@ -17,7 +17,7 @@ export function parseAuthHeader(
         const token = req.headers['x-access-token'];
 
         if (!token) {
-            return next()
+            req.auth = {}
         }
 
         if (typeof token !== 'string') {
@@ -38,21 +38,34 @@ export function parseAuthHeader(
 }
 
 export function checkRequiredAuth(req: Express.Request, res: Express.Response, next: Function) {     
-    if (!req.auth) {
+    if (Object.keys(req.auth).length === 0) {
         throw new Errors.UnauthorizedError('token not provided')
     }
     return next()
 }
 
-export function parseOrganizationToken(req: Express.Request, res: Express.Response, next: Function) {     
-    if (!req.auth) {
-        throw new Errors.UnauthorizedError('token not provided')
-    }
-    if (!req.auth.organization_id) {
+export function parseUserToken(auth: Auth) {     
+    if (!auth.id) {
         throw new Errors.UnauthorizedError('improper token provided') 
     }
 
-    return 
+    return {
+        id: auth.id
+    }
+}
+
+export function parseMemberToken(auth: Auth) {     
+    if (!auth.id) {
+        throw new Errors.UnauthorizedError('improper token provided') 
+    }
+    if (!auth.organization_id) {
+        throw new Errors.UnauthorizedError('improper token provided') 
+    }
+
+    return {
+        id: auth.id,
+        organization_id: auth.organization_id
+    }
 }
 
 export function validationErrorHandlingFn (

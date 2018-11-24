@@ -197,3 +197,21 @@ export interface Express.RequestErrorHandler extends Express.ErrorRequestHandler
 export interface IExpress extends Express.Express {
     RequestErrorHandler: Express.RequestErrorHandler
 }
+
+export function parseOrganizationToken(req: Express.Request, res: Express.Response, next: Function) {     
+    if (!req.auth) {
+        throw new Errors.UnauthorizedError('token not provided')
+    }
+    if (!req.auth.organization_id) {
+        throw new Errors.UnauthorizedError('improper token provided') 
+    }
+
+    return 
+}
+
+type UserAuth = {
+    id: number
+}
+type MemberAuth = UserAuth & {
+    organization_id: number
+}

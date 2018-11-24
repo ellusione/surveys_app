@@ -8,11 +8,6 @@ import * as Errors from '../helpers/errors'
 import * as Middleware from '../helpers/middleware'
 import * as config from '../config'
 
-enum TOKEN_TYPES {
-    User,
-    Member
-}
-
 export function initTokensController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('/user_tokens', [
@@ -49,30 +44,28 @@ export function initTokensController(app: Express.Express, modelsFactory: Models
 
     app.post('/member_tokens', [
         Middleware.checkRequiredAuth,
-        Validator.body('username').isString(),
-        Validator.body('password').isString(),
+        Validator.body('organization_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = await modelsFactory.userModel.findOne({
+            const parsedToken = Middleware.parseUserToken(req.auth)
+
+            const member = await modelsFactory.memberModel.findOne({
                 where: {
-                    username: req.body.username
+                    user_id: parsedToken.id,
+                    organization_id: req.body.organization_id
                 }
             })
 
-            if (!user) {
-                throw new Errors.NotFoundError('user')
-            }
-
-            if (!bcrypt.compareSync(req.body.password, user.password)) {
-                throw new Errors.ForbiddenError('invalid password')
+            if (!member) {
+                throw new Errors.NotFoundError('member')
             }
 
             const token = jwt.sign({
-                type: TOKEN_TYPES.User,
-                id: req.body.id
+                id: parsedToken.id,
+                organization_id: req.body.organization_id
             }, config.AUTH_TOKENS.secret, {
                 expiresIn: 86400
             })
