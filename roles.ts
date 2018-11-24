@@ -1,4 +1,4 @@
-export enum Capabilities {
+export enum Capability {
     View = 1,
     Edit,
     Create,
@@ -19,14 +19,14 @@ export class Role {
 
     readonly title: RoleTitle
 
-    readonly capabilities: Map<number, Capabilities>
+    readonly capabilities: Map<number, Capability>
 
-    constructor(title: RoleTitle, capabilities: Capabilities[]) {
+    constructor(title: RoleTitle, capabilities: Capability[]) {
         this.id = title.valueOf()
 
         this.title = title
 
-        const capabilitiesMap = new Map<number, Capabilities>()
+        const capabilitiesMap = new Map<number, Capability>()
 
         capabilities.forEach((capability) => {
             capabilitiesMap.set(capability.valueOf(), capability)
@@ -55,24 +55,24 @@ export const memberRole = new Role(
 )
 
 export const staffRole = new Role(
-    RoleTitle.Staff, [Capabilities.View]
+    RoleTitle.Staff, [Capability.View]
 )
 
 export const adminRole = new Role(
     RoleTitle.Admin, 
     [
-        Capabilities.View,
-        Capabilities.Edit,
-        Capabilities.Create
+        Capability.View,
+        Capability.Edit,
+        Capability.Create
     ]
 )
 
 export const managerRole = new Role(
     RoleTitle.Manager, 
     [
-        Capabilities.View,
-        Capabilities.Edit,
-        Capabilities.Create,
-        Capabilities.Delete
+        Capability.View,
+        Capability.Edit,
+        Capability.Create,
+        Capability.Delete
     ]
 )

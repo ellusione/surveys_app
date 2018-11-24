@@ -3,13 +3,15 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as Models from '../models'
 import * as Middleware from '../helpers/middleware'
+import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
 import {Role} from '../roles'
 import * as Errors from '../helpers/errors'
 
 
 export function initMembersController(app: Express.Express, modelsFactory: Models.Factory) {
-
+    const authMiddleware = makeAuthMiddleware(modelsFactory)
+    
     app.post('/members', [
         Middleware.checkRequiredAuth,
         Validator.body('user_id').isInt({gt: 0}),

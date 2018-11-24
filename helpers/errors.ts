@@ -39,8 +39,8 @@ export class ForbiddenError extends BaseError {
 export class UnauthorizedError extends BaseError {
     name = 'UnauthorizedError'
     statusCode = 401
-    constructor (message: string) {
-        super(message)
+    constructor (message?: string) {
+        super(message || 'unauthorized request')
         Object.setPrototypeOf(this, UnauthorizedError.prototype);
     }
 }

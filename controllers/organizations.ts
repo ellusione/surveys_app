@@ -3,12 +3,14 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as Models from '../models'
 import * as Middleware from '../helpers/middleware'
+import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Role, Capabilities} from '../roles'
+import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
 export function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
-
+    const authMiddleware = makeAuthMiddleware(modelsFactory)
+    
     app.post('/organizations', [
         Middleware.checkRequiredAuth,
         Validator.body('name').isString(),
@@ -86,7 +88,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
 
             const role = Role.findByRoleId(member.role_id)
 
-            if (!role.capabilities.get(Capabilities.Edit)) {
+            if (!role.capabilities.get(Capability.Edit)) {
                 throw new Errors.ForbiddenError(
                     'Member not authorized to edit organization'
                 )
@@ -130,7 +132,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
 
             const role = Role.findByRoleId(member.role_id)
 
-            if (!role.capabilities.get(Capabilities.Delete)) {
+            if (!role.capabilities.get(Capability.Delete)) {
                 throw new Errors.ForbiddenError(
                     'Member not authorized to delete organization'
                 )

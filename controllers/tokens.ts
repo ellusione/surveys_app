@@ -43,18 +43,19 @@ export function initTokensController(app: Express.Express, modelsFactory: Models
     })
 
     app.post('/member_tokens', [
-        Middleware.checkRequiredAuth,
         Validator.body('organization_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const parsedToken = Middleware.parseUserToken(req.auth)
+            if (req.auth.type !== 'user') {
+                throw new Errors.UnauthorizedError('unexpected token')
+            }
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
-                    user_id: parsedToken.id,
+                    user_id: req.auth.id,
                     organization_id: req.body.organization_id
                 }
             })
@@ -64,7 +65,7 @@ export function initTokensController(app: Express.Express, modelsFactory: Models
             }
 
             const token = jwt.sign({
-                id: parsedToken.id,
+                id: req.auth.id,
                 organization_id: req.body.organization_id
             }, config.AUTH_TOKENS.secret, {
                 expiresIn: 86400

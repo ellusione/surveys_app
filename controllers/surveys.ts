@@ -3,15 +3,15 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as Models from '../models'
 import * as Middleware from '../helpers/middleware'
+import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Role, Capabilities} from '../roles'
+import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
 export function initSurveysController(app: Express.Express, modelsFactory: Models.Factory) {
-    
-    //add authentication. user and org in auth
+    const authMiddleware = makeAuthMiddleware(modelsFactory)
+
     app.post('/surveys', [
-        Middleware.checkRequiredAuth,
         Validator.body('creator_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
@@ -33,7 +33,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
 
             const role = Role.findByRoleId(member.role_id)
 
-            if (!role.capabilities.get(Capabilities.Create)) {
+            if (!role.capabilities.get(Capability.Create)) {
                 throw new Errors.ForbiddenError(
                     'Member not authorized to create survey'
                 )
@@ -112,7 +112,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
 
             const role = Role.findByRoleId(member.role_id)
 
-            if (!role.capabilities.get(Capabilities.Edit)) {
+            if (!role.capabilities.get(Capability.Edit)) {
 
                 const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
                     where: {
@@ -121,7 +121,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                     }
                 })
 
-                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Edit)) {
+                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capability.Edit)) {
                     throw new Errors.ForbiddenError(
                         'Member not authorized to edit survey'
                     )
@@ -169,7 +169,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
 
             const role = Role.findByRoleId(member.role_id)
 
-            if (!role.capabilities.get(Capabilities.Delete)) {
+            if (!role.capabilities.get(Capability.Delete)) {
                 const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
                     where: {
                         user_id: req.body.user_id,
@@ -177,7 +177,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                     }
                 })
 
-                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Delete)) {
+                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capability.Delete)) {
                     throw new Errors.ForbiddenError(
                         'Member not authorized to delete survey'
                     )

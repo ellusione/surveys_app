@@ -3,12 +3,15 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as Models from '../models'
 import * as Middleware from '../helpers/middleware'
+import makeAuthMiddleware from '../helpers/auth_middleware'
 import {Role} from '../roles'
 import * as Errors from '../helpers/errors'
 
 export function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Models.Factory) {
-
+    const authMiddleware = makeAuthMiddleware(modelsFactory)
+    
     app.post('/surveys/:survey_id/users/:user_id/permissions', [
+        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
@@ -70,6 +73,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
     })
 
     app.delete('/surveys/:survey_id/users/:user_id/permissions', [
+        Middleware.checkRequiredAuth,
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         Middleware.validationErrorHandlingFn
     ],

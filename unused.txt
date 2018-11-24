@@ -215,3 +215,7 @@ type UserAuth = {
 type MemberAuth = UserAuth & {
     organization_id: number
 }
+
+    checkRequiredAuth(auth: Auth) {     
+        throw new Errors.UnauthorizedError()
+    }
