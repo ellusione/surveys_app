@@ -9,6 +9,7 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "^10.12.10",
     "@types/pg": "^7.4.11",
+    "@types/promise": "^7.1.30",
     "@types/request": "^2.48.1",
     "@types/sequelize": "^4.27.31",
     "@types/uuid": "^3.4.4",

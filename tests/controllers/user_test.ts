@@ -145,4 +145,24 @@ describe('Survey test', () => {
             expect(res.body.errors.length).to.equal(1)
         })
     })
+
+    describe('Patch user', () => {
+        let user: User
+
+        beforeEach(async () => {
+            user = await makeUser('a')
+        })
+
+        it('Successfully find the user', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'PATCH',
+                body: {name: 'grr'},
+                json: true
+            })
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.exist
+            expect(res.body.name).to.equal('grr')
+        })
+    })
 })
