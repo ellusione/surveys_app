@@ -1,7 +1,7 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import * as Models from '../models'
-import {validationErrorHandlingFn} from '../helpers/middleware'
+import * as Middleware from '../helpers/middleware'
 import * as Errors from '../helpers/errors'
 import { isNullOrUndefined } from 'util';
 
@@ -9,7 +9,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
 
     app.post('/users', [
         Validator.body('name').isString(),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.userModel.create({name: req.body.name})
@@ -18,25 +18,25 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
     })
 
     app.get('/users', [
-        Validator.query('page').optional().isInt({gt: -1}), 
-        Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
-        validationErrorHandlingFn
+        Validator.query('page').optional().isInt({gt: 0}), 
+        Validator.query('size').optional().isInt({lt: 101, gt: 0}),
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
-        const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
+        const page = isNullOrUndefined(req.query.page) ? 1 : req.query.page
 
-        const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
+        const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
         const result = await modelsFactory.userModel.findAndCountAll({
-            offset: page * limit,
-            limit: limit
+            offset: Middleware.calculatePaginationOffset(page, limit),
+            limit
         })
         return res.json(result) //is total correct?
     })
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const userId = req.params.user_id
@@ -47,13 +47,13 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
             return res.json(result) 
         }
 
-        return next(new Errors.NotFoundError('user', userId))
+        return next(new Errors.NotFoundError(Models.userName, userId))
     })
 
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const userId = req.params.user_id
@@ -62,7 +62,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
             .findById(userId)
 
         if (!result) {
-            return next(new Errors.NotFoundError('user', userId))
+            return next(new Errors.NotFoundError(Models.userName, userId))
         }
 
         if (result.name === req.body.name) {
@@ -76,7 +76,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const userId = req.params.user_id
@@ -91,6 +91,6 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
             return res.status(200)
         }
 
-        return next(new Errors.NotFoundError('user', userId))
+        return next(new Errors.NotFoundError(Models.userName, userId))
     })
 }

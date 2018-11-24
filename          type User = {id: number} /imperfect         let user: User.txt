@@ -172,3 +172,9 @@ export function sendResponseFn(
     // if (Errors.BaseError.isPrototypeOf(error)) {
     //     return res.status(error.statusCode).json(errorJson)
     // }
+
+const f = NotFoundError.bind(NotFoundError, 's')
+const a = new f(1)
+
+        type User = {id: number} //imperfect
+        let user: User

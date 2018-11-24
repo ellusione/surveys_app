@@ -1,8 +1,9 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import * as Models from '../models'
-import {validationErrorHandlingFn} from '../helpers/middleware'
+import * as Middleware from '../helpers/middleware'
 import {Role} from '../roles'
+import * as Errors from '../helpers/errors'
 
 export function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Models.Factory) {
 
@@ -10,14 +11,14 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
-
+        const surveyId = req.body.survey_id
         const survey = await modelsFactory.surveyModel.findById(req.body.survey_id)
 
         if (!survey) {
-            return res.status(404).send('Survey not found')
+            return next(new Errors.NotFoundError(Models.surveyName, surveyId))
         }
 
         const member = await modelsFactory.memberModel.findOne({
@@ -28,11 +29,11 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         })
 
         if (!member) {
-            return res.status(403).send('User is not a member of the required organization')
+            return next(new Errors.ForbiddenError('User is not a member of the required organization'))
         }
 
         if (member.role_id > req.body.role_id) {
-            return res.status(400).send('Detected incorrect user permission')
+            return next(new Errors.BadRequestError('Detected incorrect user permission'))
         }
 
         const result = await modelsFactory.memberSurveyPermissionModel 
@@ -48,7 +49,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
     app.get('/surveys/:survey_id/users/:user_id/permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.param('user_id').isInt({gt: 0}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const result = await modelsFactory.memberSurveyPermissionModel.findAll({
@@ -63,7 +64,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
 
     app.delete('/surveys/:survey_id/users/:user_id/permissions', [
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
 

@@ -1,6 +1,6 @@
 
 export abstract class BaseError extends Error {
-    abstract errorName: string
+    abstract name: string
     abstract statusCode: number
 
     constructor(message: string) {
@@ -9,22 +9,29 @@ export abstract class BaseError extends Error {
     }
 }
 
+export class BadRequestError extends BaseError {
+    name = 'BadRequestError'
+    statusCode = 400 
+    constructor (message: string) {
+        super(message)
+        Object.setPrototypeOf(this, BadRequestError.prototype);
+    }
+}
+
 export class NotFoundError extends BaseError {
-    errorName = 'NotFoundError'
-    statusCode = 404
-    constructor (name: string, id?: number) {
-        super(`Cannot find ${name}${id ? `:${id}` : ``}`)
-        this.name = this.errorName
+    name = 'NotFoundError'
+    statusCode = 404 
+    constructor (objectName: string, id?: number) { //make optimizer bind fn?
+        super(`Cannot find ${objectName}${id ? `:${id}` : ``}`)
         Object.setPrototypeOf(this, NotFoundError.prototype);
     }
 }
 
 export class ForbiddenError extends BaseError {
-    errorName = 'ForbiddenError'
+    name = 'ForbiddenError'
     statusCode = 403
     constructor (message: string) {
         super(message)
-        this.name = this.errorName
         Object.setPrototypeOf(this, ForbiddenError.prototype);
     }
 }

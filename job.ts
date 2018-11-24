@@ -1,8 +1,8 @@
 import {initDB} from './database'
 import * as JobDefinition from './models/deletion_job/definition'
-import * as Model from './models'
+import * as Models from './models'
 
-export function getDeletionRunnerFn(modelsFactory: Model.Factory) {
+export function getDeletionRunnerFn(modelsFactory: Models.Factory) {
     async function process (job: JobDefinition.DeletionJobInstance) {
         const model = modelsFactory.sequelize.models[job.table_name]
 

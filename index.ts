@@ -1,13 +1,13 @@
-import {initDB} from './database'
 import Express from 'express';
 import Http from 'http';
 import {initRoutes} from './controllers'
 import {errorHandlingFn} from './helpers/middleware'
+import {initDB} from './database'
+import * as Models from './models'
 
 const port = process.env.PORT || 3000
 
-export async function init() {
-    const modelsFactory = await initDB()
+export async function init(modelsFactory: Models.Factory) {
 
     console.log("Done initializing database")
 
@@ -28,7 +28,9 @@ export async function init() {
 }
 
 if (require.main === module) {
-    init()
+    initDB().then((modelsFactory) => {
+        init(modelsFactory)
+    })
 }
 
 

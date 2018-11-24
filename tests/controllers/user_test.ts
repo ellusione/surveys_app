@@ -2,14 +2,35 @@ import * as chai from 'chai'
 chai.use(require('chai-as-promised'))
 const expect = chai.expect
 import request from 'request'
-import * as bluebird from 'bluebird'
+import bluebird from 'bluebird'
 import {init} from '../../index'
+import {initDB} from '../../database'
+import * as Models from '../../models'
 
 describe('Survey test', () => {
+    type User = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
+    let modelsFactory: Models.Factory
     
+    async function makeUser (name: string) {
+        const res = await promisifedRequest({
+            url:'http://localhost:3000/users',
+            method: 'POST',
+            body: {name},
+            json: true
+        })
+        expect(res.statusCode).to.equal(200)
+        expect(res.body).to.exist
+        return res.body
+    }
+
     before('Init db and server with routes', async () => {
-        await init()
+        modelsFactory = await initDB()
+        await init(modelsFactory)
+    })
+
+    beforeEach(async () => {
+        await modelsFactory.userModel.truncate()
     })
 
     describe('Create user', () => {
@@ -29,39 +50,21 @@ describe('Survey test', () => {
         })
 
         it('User created with proper req body', async () => {
-            const res = await promisifedRequest({
-                url:'http://localhost:3000/users',
-                method: 'POST',
-                body: {'name': 'a'},
-                json: true
-            })
+            const user = await makeUser('a')
 
-            expect(res.statusCode).to.equal(200)
-
-            expect(res.body).to.exist
-            expect(res.body.createdAt).to.exist
-            expect(res.body.updatedAt).to.exist
-            expect(res.body.deletedAt).to.not.exist
-            expect(res.body.id).to.be.an('number')
-            expect(res.body.name).to.equal('a')
+            expect(user.createdAt).to.exist
+            expect(user.updatedAt).to.exist
+            expect(user.deletedAt).to.not.exist
+            expect(user.id).to.be.an('number')
+            expect(user.name).to.equal('a')
         })
     })
 
     describe('Find user', () => {
-        type User = {id: number} //imperfect
         let user: User
 
         beforeEach(async () => {
-            const res = await promisifedRequest({
-                url:'http://localhost:3000/users',
-                method: 'POST',
-                body: {'name': 'a'},
-                json: true
-            })
-            expect(res.statusCode).to.equal(200)
-            expect(res.body).to.exist
-            expect(res.body.id).to.be.an('number')
-            user = res.body
+            user = await makeUser('a')
         })
 
         it('Successfully find the user', async () => {
@@ -81,6 +84,63 @@ describe('Survey test', () => {
                 json: true
             })
             expect(res.statusCode).to.equal(404)
+            expect(res.body.errors).to.be.an('array')
+            expect(res.body.errors.length).to.equal(1)
+        })
+    })
+
+    describe('Find users', () => {
+        let users: User[]
+
+        beforeEach(async () => {
+            users = []
+            users.push(await makeUser('a'))
+            users.push(await makeUser('b'))
+            users.push(await makeUser('c'))
+        })
+
+        it('Successfully find the users', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users`,
+                json: true
+            })
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.exist
+            expect(res.body.count).to.equal(3)
+            expect(res.body.rows).to.be.an('array')
+            expect(res.body.rows).to.deep.equal(users)
+        })
+
+        it('Successfully find the users with pagination', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users?page=2&size=1`,
+                json: true
+            })
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.exist
+            expect(res.body.count).to.equal(3)
+            expect(res.body.rows).to.be.an('array')
+            expect(res.body.rows).to.deep.equal([users[1]])
+        })
+
+        it('Successfully find no users with pagination', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users?page=2&size=10`,
+                json: true
+            })
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.exist
+            expect(res.body.count).to.equal(3)
+            expect(res.body.rows).to.be.an('array')
+            expect(res.body.rows).to.be.empty
+        })
+
+        it('Error on finding users with incorrect pagination query', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users?page=a`,
+                json: true
+            })
+            expect(res.statusCode).to.equal(400)
             expect(res.body.errors).to.be.an('array')
             expect(res.body.errors.length).to.equal(1)
         })

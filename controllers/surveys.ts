@@ -1,7 +1,7 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import * as Models from '../models'
-import {validationErrorHandlingFn} from '../helpers/middleware'
+import * as Middleware from '../helpers/middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capabilities} from '../roles'
 import * as Errors from '../helpers/errors'
@@ -13,7 +13,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         Validator.body('creator_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
@@ -46,17 +46,17 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
 
     app.get('/surveys', [
         Validator.query('page').optional().isInt({gt: -1}), 
-        Validator.query('limit').optional().isInt({lt: 101, gt: 0}),
-        validationErrorHandlingFn
+        Validator.query('size').optional().isInt({lt: 101, gt: 0}),
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
-        const limit = isNullOrUndefined(req.query.limit) ? 10 : req.query.limit
+        const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
         const result = await modelsFactory.surveyModel.findAndCountAll({
             offset: page * limit,
-            limit: limit
+            limit
         })
 
         return res.json(result) //is total correct?
@@ -64,7 +64,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const surveyId = req.params.survey_id
@@ -75,14 +75,14 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
         if (result) {
             return res.json(result) 
         }
-        return next(new Errors.NotFoundError('survey', surveyId))
+        return next(new Errors.NotFoundError(Models.surveyName, surveyId))
     })
 
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
@@ -120,7 +120,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             .findById(surveyId)
 
         if (!result) {
-            return next(new Errors.NotFoundError('survey', surveyId))
+            return next(new Errors.NotFoundError(Models.surveyName, surveyId))
         }
 
         if (result.name === req.body.name) {
@@ -135,7 +135,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
-        validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn
     ],
     async (req: Express.Request, res: Express.Response, next: Function) => {
         const member = await modelsFactory.memberModel.findOne({
@@ -179,6 +179,6 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             return res.status(200)
         }
 
-        return next(new Errors.NotFoundError('survey', surveyId))
+        return next(new Errors.NotFoundError(Models.surveyName, surveyId))
     })
 }

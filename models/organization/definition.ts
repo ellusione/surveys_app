@@ -1,6 +1,8 @@
 import Sequelize from 'sequelize'
 import {BaseAttributes} from '../helpers';
 
+export const organizationName = 'organization'
+
 export const organizationTableName = 'organizations'
 
 export interface OrganizationAttributes extends BaseAttributes {

@@ -24,3 +24,7 @@ export function errorHandlingFn(
     }
     return res.status(500).json(errorJson)
 }
+
+export function calculatePaginationOffset (page: number, limit: number) {
+    return limit*(page-1)
+}

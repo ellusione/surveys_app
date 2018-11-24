@@ -3,6 +3,8 @@ import * as  OrganizationDefinition from '../organization/definition';
 import * as UserDefinition from '../user/definition'
 import {BaseAttributes} from '../helpers';
 
+export const memberName = 'member'
+
 export const memberTableName = 'members'
 
 export interface MemberAttributes extends BaseAttributes {
