@@ -153,7 +153,7 @@ describe('Survey test', () => {
             user = await makeUser('a')
         })
 
-        it('Successfully find the user', async () => {
+        it('Successfully update the user name', async () => {
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,
                 method: 'PATCH',
@@ -163,6 +163,33 @@ describe('Survey test', () => {
             expect(res.statusCode).to.equal(200)
             expect(res.body).to.exist
             expect(res.body.name).to.equal('grr')
+        })
+
+        it('Error on updating missing user', async () => {
+            const fakeUserId = user.id+Math.round(10*Math.random())
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${fakeUserId}`,
+                method: 'PATCH',
+                body: {name: 'grr'},
+                json: true
+            })
+            expect(res.statusCode).to.equal(404)
+            expect(res.body).to.exist
+            expect(res.body.errors).to.be.an('array')
+            expect(res.body.errors.length).to.equal(1)
+        })
+
+        it('Error on updating the user with invalid name', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'PATCH',
+                body: {name: null},
+                json: true
+            })
+            expect(res.statusCode).to.equal(400)
+            expect(res.body).to.exist
+            expect(res.body.errors).to.be.an('array')
+            expect(res.body.errors.length).to.equal(1)
         })
     })
 })

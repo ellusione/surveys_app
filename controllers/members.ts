@@ -23,7 +23,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             const user = await modelsFactory.userModel.findById(userId)
 
             if (!user) {
-                throw next(new Errors.NotFoundError(Models.userName, userId))
+                throw new Errors.NotFoundError(Models.userName, userId)
             }
 
             const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
@@ -76,7 +76,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             if (result) {
                 res.json(result) 
             }
-            throw next(new Errors.NotFoundError(Models.memberName, memberId))
+            throw new Errors.NotFoundError(Models.memberName, memberId)
         })().asCallback(next)
     })
 
@@ -92,7 +92,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             const result = await modelsFactory.memberModel.findById(memberId)
 
             if (!result) {
-                throw next(new Errors.NotFoundError(Models.memberName, memberId))
+                throw new Errors.NotFoundError(Models.memberName, memberId)
             }
 
             if (result.role_id === req.body.role_id) {
@@ -123,7 +123,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
                 return res.status(200)
             }
 
-            throw next(new Errors.NotFoundError(Models.memberName, memberId))
+            throw new Errors.NotFoundError(Models.memberName, memberId)
         })().asCallback(next)
     })
 }

@@ -74,7 +74,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
                 .findById(userId)
 
             if (!result) {
-                throw next(new Errors.NotFoundError(Models.userName, userId))
+                throw new Errors.NotFoundError(Models.userName, userId)
             }
 
             if (result.name === req.body.name) {
@@ -106,7 +106,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
                 return res.status(200)
             }
 
-            throw next(new Errors.NotFoundError(Models.userName, userId))
+            throw new Errors.NotFoundError(Models.userName, userId)
         })().asCallback(next)
     })
 }

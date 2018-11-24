@@ -27,15 +27,15 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             })
 
             if (!member) {
-                throw next(new Errors.NotFoundError('member'))
+                throw new Errors.NotFoundError('member')
             }
 
             const role = Role.findByRoleId(member.role_id)
 
             if (!role.capabilities.get(Capabilities.Create)) {
-                throw next(new Errors.ForbiddenError(
+                throw new Errors.ForbiddenError(
                     'Member not authorized to create survey'
-                ))
+                )
             }
 
             const result = await modelsFactory.surveyModel.create({
@@ -84,7 +84,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             if (result) {
                 return res.json(result) 
             }
-            throw next(new Errors.NotFoundError(Models.surveyName, surveyId))
+            throw new Errors.NotFoundError(Models.surveyName, surveyId)
         })().asCallback(next)
     })
 
@@ -105,7 +105,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             })
 
             if (!member) {
-                throw next(new Errors.NotFoundError('member'))
+                throw new Errors.NotFoundError('member')
             }
 
             const role = Role.findByRoleId(member.role_id)
@@ -120,9 +120,9 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                 })
 
                 if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Edit)) {
-                    throw next(new Errors.ForbiddenError(
+                    throw new Errors.ForbiddenError(
                         'Member not authorized to edit survey'
-                    ))
+                    )
                 }
             }
         
@@ -132,7 +132,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                 .findById(surveyId)
 
             if (!result) {
-                throw next(new Errors.NotFoundError(Models.surveyName, surveyId))
+                throw new Errors.NotFoundError(Models.surveyName, surveyId)
             }
 
             if (result.name === req.body.name) {
@@ -161,7 +161,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             })
 
             if (!member) {
-                throw next(new Errors.NotFoundError('member'))
+                throw new Errors.NotFoundError('member')
             }
 
             const role = Role.findByRoleId(member.role_id)
@@ -175,9 +175,9 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                 })
 
                 if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capabilities.Delete)) {
-                    throw next(new Errors.ForbiddenError(
+                    throw new Errors.ForbiddenError(
                         'Member not authorized to delete survey'
-                    ))
+                    )
                 }
             }
 
@@ -194,7 +194,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                 return res.status(200)
             }
 
-            throw next(new Errors.NotFoundError(Models.surveyName, surveyId))
+            throw new Errors.NotFoundError(Models.surveyName, surveyId)
         })().asCallback(next)
     })
 }

@@ -56,7 +56,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             if (result) {
                 return res.json(result) 
             }
-            throw next(new Errors.NotFoundError(Models.organizationName, organizationId))
+            throw new Errors.NotFoundError(Models.organizationName, organizationId)
         })().asCallback(next)
     })
 
@@ -79,13 +79,13 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             })
 
             if (!member) {
-                throw next(new Errors.NotFoundError(Models.memberName))
+                throw new Errors.NotFoundError(Models.memberName)
             }
 
             const role = Role.findByRoleId(member.role_id)
 
             if (!role.capabilities.get(Capabilities.Edit)) {
-                return res.status(403).send(
+                throw new Errors.ForbiddenError(
                     'Member not authorized to edit organization'
                 )
             }
@@ -94,7 +94,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
                 .findById(req.params.organization_id)
 
             if (!result) {
-                throw next(new Errors.NotFoundError(Models.organizationName, organizationId))
+                throw new Errors.NotFoundError(Models.organizationName, organizationId)
             }
 
             if (result.name === req.body.name) {
@@ -122,13 +122,13 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             })
 
             if (!member) {
-                throw next(new Errors.NotFoundError(Models.memberName))
+                throw new Errors.NotFoundError(Models.memberName)
             }
 
             const role = Role.findByRoleId(member.role_id)
 
             if (!role.capabilities.get(Capabilities.Delete)) {
-                return res.status(403).send(
+                throw new Errors.ForbiddenError(
                     'Member not authorized to delete organization'
                 )
             }
@@ -146,7 +146,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
                 return res.status(200)
             }
 
-            throw next(new Errors.NotFoundError(Models.organizationName, organizationId))
+            throw new Errors.NotFoundError(Models.organizationName, organizationId)
         })().asCallback(next)
     })
 }

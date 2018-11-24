@@ -21,7 +21,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             const survey = await modelsFactory.surveyModel.findById(req.body.survey_id)
 
             if (!survey) {
-                throw next(new Errors.NotFoundError(Models.surveyName, surveyId))
+                throw new Errors.NotFoundError(Models.surveyName, surveyId)
             }
 
             const member = await modelsFactory.memberModel.findOne({
@@ -32,11 +32,11 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             })
 
             if (!member) {
-                throw next(new Errors.ForbiddenError('User is not a member of the required organization'))
+                throw new Errors.ForbiddenError('User is not a member of the required organization')
             }
 
             if (member.role_id > req.body.role_id) {
-                throw next(new Errors.BadRequestError('Detected incorrect user permission'))
+                throw new Errors.BadRequestError('Detected incorrect user permission')
             }
 
             const result = await modelsFactory.memberSurveyPermissionModel 
