@@ -11,6 +11,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
     
     //add authentication. user and org in auth
     app.post('/surveys', [
+        Middleware.checkRequiredAuth,
         Validator.body('creator_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
@@ -89,6 +90,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
     })
 
     app.patch('/surveys/:survey_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
@@ -146,6 +148,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
     })
 
     app.delete('/surveys/:survey_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
         Middleware.validationErrorHandlingFn

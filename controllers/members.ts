@@ -7,9 +7,11 @@ import { isNullOrUndefined } from 'util';
 import {Role} from '../roles'
 import * as Errors from '../helpers/errors'
 
+
 export function initMembersController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('/members', [
+        Middleware.checkRequiredAuth,
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
@@ -81,6 +83,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
     })
 
     app.patch('/members/:member_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         Middleware.validationErrorHandlingFn
@@ -106,6 +109,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
     })
 
     app.delete('/members/:member_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('member_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],

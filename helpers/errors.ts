@@ -35,3 +35,12 @@ export class ForbiddenError extends BaseError {
         Object.setPrototypeOf(this, ForbiddenError.prototype);
     }
 }
+
+export class UnauthorizedError extends BaseError {
+    name = 'UnauthorizedError'
+    statusCode = 401
+    constructor (message: string) {
+        super(message)
+        Object.setPrototypeOf(this, UnauthorizedError.prototype);
+    }
+}

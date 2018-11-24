@@ -17,7 +17,7 @@ describe('Survey test', () => {
 
     before('Init db', async () => {
         modelsFactory = await initDB()
-        user = await modelsFactory.userModel.create({name: 'user a'})
+        user = await modelsFactory.userModel.create({name: 'user a', username: 'wow', password: 'hash'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
     })
 

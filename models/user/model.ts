@@ -8,7 +8,9 @@ import * as Definition from './definition'
 
 const sequelizeAttributes = {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
-    name: { type: Sequelize.STRING, allowNull: false }
+    name: { type: Sequelize.STRING, allowNull: false },
+    username: { type: Sequelize.STRING, allowNull: false }, //hide from response
+    password: { type: Sequelize.STRING, allowNull: false } //hashme from client and here
 }
 
 export default (

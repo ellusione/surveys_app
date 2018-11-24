@@ -1,7 +1,7 @@
 import Express from 'express';
 import Http from 'http';
 import {initRoutes} from './controllers'
-import {errorHandlingFn} from './helpers/middleware'
+import * as Middleware from './helpers/middleware'
 import {initDB} from './database'
 import * as Models from './models'
 
@@ -20,9 +20,11 @@ export async function init(modelsFactory: Models.Factory) {
 
     app.use(Express.json())
 
+    app.use(Middleware.parseAuthHeader)
+
     initRoutes(app, modelsFactory)
 
-    app.use(errorHandlingFn)
+    app.use(Middleware.errorHandlingFn)
 
     console.log("Done initialzing routes")
 }

@@ -1,6 +1,7 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
+import * as bcrypt from 'bcryptjs'
 import * as Models from '../models'
 import * as Middleware from '../helpers/middleware'
 import * as Errors from '../helpers/errors'
@@ -9,13 +10,20 @@ import { isNullOrUndefined } from 'util';
 export function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('/users', [
+        Middleware.checkRequiredAuth,
         Validator.body('name').isString(),
+        Validator.body('username').isString(),
+        Validator.body('password').isString(),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
 
         return (async (): Bluebird<Express.Response> => {
-            const result = await modelsFactory.userModel.create({name: req.body.name})
+            const result = await modelsFactory.userModel.create({
+                name: req.body.name,
+                username: req.body.username,
+                password: bcrypt.hashSync(req.body.password, 8)
+            })
 
             return res.json(result)
         })().asCallback(next)
@@ -61,6 +69,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
     })
 
     app.patch('/users/:user_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         Middleware.validationErrorHandlingFn
@@ -88,6 +97,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
     })
 
     app.delete('/users/:user_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('user_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],

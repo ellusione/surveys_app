@@ -178,3 +178,22 @@ const a = new f(1)
 
         type User = {id: number} //imperfect
         let user: User
+
+        import Express from 'express';
+
+export interface Express.Request extends Express.Request {
+    is_auth_required: boolean
+    auth?: Object
+}
+
+export interface Express.RequestHandler extends Express.RequestHandler {
+    (req: Express.Request, res: Express.Response, next: Function): any;
+}
+
+export interface Express.RequestErrorHandler extends Express.ErrorRequestHandler {
+    (err: any, req: Express.Request, res: Express.Response, next: Function): any;
+}
+
+export interface IExpress extends Express.Express {
+    RequestErrorHandler: Express.RequestErrorHandler
+}

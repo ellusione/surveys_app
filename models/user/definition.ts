@@ -7,7 +7,9 @@ export const userTableName = 'users'
 
 export interface UserAttributes extends BaseAttributes {
     id?: number,
-    name: string
+    name: string,
+    username: string,
+    password: string
 }
 
 export type UserInstance = Sequelize.Instance<UserAttributes> & UserAttributes & BaseAttributes

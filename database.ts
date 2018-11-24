@@ -1,9 +1,10 @@
 
 import Sequelize from 'sequelize'
 import * as Models from './models'
+import * as config from './config'
 
 const sequelize = new Sequelize(
-    'postgres://postgres:123@localhost:5432/surveys',
+    `${config.DATABASE.username}://${config.DATABASE.password}@${config.DATABASE.host}:${config.DATABASE.port}/surveys`,
     { dialect: 'postgres' }
 )
 

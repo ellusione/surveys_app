@@ -10,6 +10,7 @@ import * as Errors from '../helpers/errors'
 export function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
 
     app.post('/organizations', [
+        Middleware.checkRequiredAuth,
         Validator.body('name').isString(),
         Middleware.validationErrorHandlingFn
     ],
@@ -61,6 +62,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
     })
 
     app.patch('/organizations/:organization_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
@@ -108,6 +110,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
     })
 
     app.delete('/organizations/:organization_id', [
+        Middleware.checkRequiredAuth,
         Validator.param('organization_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
