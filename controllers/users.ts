@@ -98,12 +98,12 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
 
             const result = await modelsFactory.userModel.destroy({
                 where: {
-                    user_id: userId
+                    id: userId
                 }
             })
             
             if (result === 1) {
-                return res.status(200)
+                return res.sendStatus(200)
             }
 
             throw new Errors.NotFoundError(Models.userName, userId)

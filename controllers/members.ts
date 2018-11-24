@@ -29,7 +29,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
 
             if (!organization) {
-                return res.send('Organization not found')
+                throw new Errors.NotFoundError('Organization not found')
             }
 
             const result = await modelsFactory.memberModel.create({
@@ -38,7 +38,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
                 role_id: req.body.role_id
             })
 
-            return res.send(result)
+            return res.json(result)
         })().asCallback(next)
     })
         
@@ -96,7 +96,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             }
 
             if (result.role_id === req.body.role_id) {
-                res.send(result)
+                return res.json(result)
             }
 
             await result.update({role_id: req.body.role_id})

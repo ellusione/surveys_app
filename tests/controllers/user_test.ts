@@ -1,11 +1,12 @@
 import * as chai from 'chai'
 chai.use(require('chai-as-promised'))
-const expect = chai.expect
 import request from 'request'
 import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
 import * as Models from '../../models'
+
+const expect = chai.expect
 
 describe('Survey test', () => {
     type User = {id: number} //imperfect
@@ -69,7 +70,7 @@ describe('Survey test', () => {
 
         it('Successfully find the user', async () => {
             const res = await promisifedRequest({
-                url:`http://localhost:3000/users/${user.id}`,
+                url: `http://localhost:3000/users/${user.id}`,
                 json: true
             })
             expect(res.statusCode).to.equal(200)
@@ -163,6 +164,14 @@ describe('Survey test', () => {
             expect(res.statusCode).to.equal(200)
             expect(res.body).to.exist
             expect(res.body.name).to.equal('grr')
+
+            const foundUserRes = await promisifedRequest({
+                url: `http://localhost:3000/users/${user.id}`,
+                json: true
+            })
+            expect(foundUserRes.statusCode).to.equal(200)
+            expect(foundUserRes.body).to.exist
+            expect(foundUserRes.body.name).to.equal('grr')
         })
 
         it('Error on updating missing user', async () => {
@@ -190,6 +199,37 @@ describe('Survey test', () => {
             expect(res.body).to.exist
             expect(res.body.errors).to.be.an('array')
             expect(res.body.errors.length).to.equal(1)
+        })
+    })
+
+    describe('Delete user', () => {
+        let user: User
+
+        beforeEach(async () => {
+            user = await makeUser('a')
+        })
+
+        it('Successfully delete the user', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'DELETE'
+            })
+            expect(res.statusCode).to.equal(200)
+
+            const foundUserRes = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`
+            })
+
+            expect(foundUserRes.statusCode).to.equal(404)
+        })
+
+        it('Fail to delete missing user', async () => {
+            const fakeUserId = user.id+Math.round(10*Math.random())
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${fakeUserId}`,
+                method: 'DELETE'
+            })
+            expect(res.statusCode).to.equal(404)
         })
     })
 })
