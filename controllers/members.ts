@@ -3,17 +3,21 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import * as Middleware from '../helpers/middleware'
-import makeAuthMiddleware from '../helpers/auth_middleware'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capability} from '../roles'
-import * as Errors from '../helpers/errors'
+import * as Errors from '../errors'
 
 type PaginationResult = {rows: ModelTypes.MemberInstance[], count: number}
 
-export function initMembersController(app: Express.Express, modelsFactory: Factory) {
-    const authMiddleware = makeAuthMiddleware(modelsFactory)
-    
+export function initMembersController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -34,7 +38,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         checkAuth(Capability.Create),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -70,7 +74,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
         Validator.query('user_id').optional().isInt({gt: 0}),
         Validator.query('organization_id').optional().isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -109,67 +113,49 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
 
     app.get('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        resourcesMiddleware.loadMember,
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        
-        return (async (): Bluebird<Express.Response> => {
-            const memberId = req.params.member_id
-            const result = await modelsFactory.memberModel.findById(memberId)
-
-            if (result) {
-                res.json(result) 
-            }
-            throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
-        })().asCallback(next)
+        return res.json(res.locals.member)
     })
 
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+        resourcesMiddleware.loadMember,
         checkAuth(Capability.Edit),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const memberId = req.params.member_id
-            const result = await modelsFactory.memberModel.findById(memberId)
+            const member = <ModelTypes.MemberInstance> res.locals.member
 
-            if (!result) {
-                throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
+            if (member.role_id === req.body.role_id) {
+                return res.json(member)
             }
 
-            if (result.role_id === req.body.role_id) {
-                return res.json(result)
-            }
+            await member.update({role_id: req.body.role_id})
 
-            await result.update({role_id: req.body.role_id})
-
-            return res.json(result)
+            return res.json(member)
         })().asCallback(next)
     })
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
+        resourcesMiddleware.loadMember,
         checkAuth(Capability.Delete),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const memberId = req.params.member_id
-            const result = await modelsFactory.memberModel.destroy({
-                where: {
-                    id: memberId
-                }
-            })
+            const member = <ModelTypes.MemberInstance> res.locals.member
 
-            if (result === 1) {
-                return res.status(200)
-            }
+            await member.destroy()
 
-            throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
+            return res.sendStatus(200)
         })().asCallback(next)
     })
 }

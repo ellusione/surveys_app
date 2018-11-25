@@ -3,15 +3,19 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import * as Middleware from '../helpers/middleware'
-import makeAuthMiddleware from '../helpers/auth_middleware'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Capability, adminRole} from '../roles'
-import * as Errors from '../helpers/errors'
+import * as Errors from '../errors'
 
-export function initOrganizationsController(app: Express.Express, modelsFactory: Factory) {
-    const authMiddleware = makeAuthMiddleware(modelsFactory)
-
+export function initOrganizationsController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
     function checkMemberAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -20,7 +24,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
                     case 'member': {
                         const member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
 
-                        if (member.organization_id !== req.params.organization_id) {
+                        if (member.organization_id !== res.locals.organization.id) {
                             throw new Errors.UnauthorizedError()
                         }
                         res.locals.auth_member = member
@@ -35,7 +39,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -59,7 +63,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
     app.get('/organizations', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -79,71 +83,48 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        resourcesMiddleware.loadOrganization,
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        
-        return (async (): Bluebird<Express.Response> => {
-            const organizationId = req.params.organization_id
-            const result = await modelsFactory.organizationModel.findById(organizationId)
-
-            if (result) {
-                return res.json(result) 
-            }
-            throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
-        })().asCallback(next)
+        return res.json(res.locals.organization)
     })
 
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        resourcesMiddleware.loadOrganization,
         checkMemberAuth(Capability.Edit),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = req.params.organization_id
+            const organization = <ModelTypes.OrganizationInstance> res.locals.organization
 
-            const result = await modelsFactory.organizationModel
-                .findById(organizationId)
-
-            if (!result) {
-                throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
+            if (organization.name === req.body.name) {
+                return res.json(organization) 
             }
 
-            if (result.name === req.body.name) {
-                return res.json(result) 
-            }
+            await organization.update({name: req.body.name})
 
-            await result.update({name: req.body.name})
-
-            return res.json(result) 
+            return res.json(organization) 
         })().asCallback(next)
     })
 
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         checkMemberAuth(Capability.Delete),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = req.params.organization_id
-            
-            const result = await modelsFactory.organizationModel
-                .destroy({
-                    where: {
-                        id: organizationId
-                    }
-                }) 
+            const organization = <ModelTypes.OrganizationInstance> res.locals.organization
 
-            if (result === 1) {
-                return res.status(200)
-            }
+            await organization.destroy()
 
-            throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
+            return res.sendStatus(200)
         })().asCallback(next)
     })
 }

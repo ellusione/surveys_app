@@ -4,16 +4,23 @@ import Bluebird from 'bluebird'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
-import * as Errors from '../helpers/errors'
-import * as Middleware from '../helpers/middleware'
+import * as Errors from '../errors'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
 import * as config from '../config'
 
-export function initTokensController(app: Express.Express, modelsFactory: Factory) {
+export function initTokensController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
 
     app.post('/user_tokens', [
         Validator.body('username').isString(),
         Validator.body('password').isString(),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -40,7 +47,7 @@ export function initTokensController(app: Express.Express, modelsFactory: Factor
 
     app.post('/member_tokens', [
         Validator.body('organization_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         

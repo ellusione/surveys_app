@@ -3,28 +3,19 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import * as Middleware from '../helpers/middleware'
-import makeAuthMiddleware from '../helpers/auth_middleware'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Capability} from '../roles'
-import * as Errors from '../helpers/errors'
+import * as Errors from '../errors'
 
-export function initSurveysController(app: Express.Express, modelsFactory: Factory) {
-    const authMiddleware = makeAuthMiddleware(modelsFactory)
-
-    function loadSurvey (req: Express.Request, res: Express.Response, next: Function) {
-        return (async (): Bluebird<void> => {
-            const surveyId = req.params.survey_id
-            const survey = await modelsFactory.surveyModel.findById(surveyId)
-
-            if (!survey) {
-                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
-            }
-
-            res.locals.survey = survey
-        })().asCallback(next)
-    }
-
+export function initSurveysController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -60,7 +51,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
     app.post('/surveys', [
         Validator.body('name').isString(),
         checkAuth(Capability.Create),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -80,7 +71,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
     app.get('/surveys', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -100,29 +91,19 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        resourcesMiddleware.loadSurvey,
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        
-        return (async (): Bluebird<Express.Response> => {
-            const surveyId = req.params.survey_id
-
-            const result = await modelsFactory.surveyModel
-                .findById(surveyId)
-
-            if (result) {
-                return res.json(result) 
-            }
-            throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
-        })().asCallback(next)
+        return res.json(res.locals.survey) 
     })
 
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        loadSurvey,
+        resourcesMiddleware.loadSurvey,
         checkSurveyAuth(Capability.Edit),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -141,9 +122,9 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        loadSurvey,
+        resourcesMiddleware.loadSurvey,
         checkSurveyAuth(Capability.Delete),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -151,7 +132,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
             const survey = <ModelTypes.SurveyInstance> res.locals.survey
 
             await survey.destroy()
-            
+
             return res.sendStatus(200)
         })().asCallback(next)
     })

@@ -4,28 +4,19 @@ import Bluebird from 'bluebird'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import * as Middleware from '../helpers/middleware'
-import makeAuthMiddleware from '../helpers/auth_middleware'
-import * as Errors from '../helpers/errors'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
+import * as Errors from '../errors'
 import {Capability} from '../roles'
 import { isNullOrUndefined } from 'util';
 
-export function initUsersController(app: Express.Express, modelsFactory: Factory) {
-    const authMiddleware = makeAuthMiddleware(modelsFactory) //maybe move to injection to optimize objects count (to make shared)
-
-    function loadUser (req: Express.Request, res: Express.Response, next: Function) {
-        return (async (): Bluebird<void> => {
-            const userId = req.params.user_id
-            const user = await modelsFactory.userModel.findById(userId)
-
-            if (!user) {
-                throw new Errors.NotFoundError(ModelTypes.userName, userId)
-            }
-
-            res.locals.user = user
-        })().asCallback(next)
-    }
-
+export function initUsersController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -55,7 +46,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
         Validator.body('name').isString(),
         Validator.body('username').isString(),
         Validator.body('password').isString(),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -73,7 +64,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
     app.get('/users', [
         Validator.query('page').optional().isInt({gt: 0}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -92,8 +83,8 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        loadUser,
-        Middleware.validationErrorHandlingFn
+        resourcesMiddleware.loadUser,
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         return res.json(res.locals.user)
@@ -102,9 +93,9 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        loadUser,
+        resourcesMiddleware.loadUser,
         checkAuth(Capability.Edit),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -123,9 +114,9 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        loadUser,
+        resourcesMiddleware.loadUser,
         checkAuth(Capability.Delete),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         

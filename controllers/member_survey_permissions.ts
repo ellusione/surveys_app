@@ -3,38 +3,27 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import * as Middleware from '../helpers/middleware'
-import makeAuthMiddleware from '../helpers/auth_middleware'
+import ResourcesMiddleware from '../middleware/resources';
+import AuthMiddleware from '../middleware/auth';
+import * as Middleware from '../middleware'
 import {Role, Capability} from '../roles'
-import * as Errors from '../helpers/errors'
+import * as Errors from '../errors'
 
-export function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Factory) {
-    const authMiddleware = makeAuthMiddleware(modelsFactory)
-    
-    function loadSurvey (req: Express.Request, res: Express.Response, next: Function) {
-        return (async (): Bluebird<void> => {
-            const surveyId = req.params.survey_id
-            const survey = await modelsFactory.surveyModel.findById(surveyId)
-
-            if (!survey) {
-                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
-            }
-
-            res.locals.survey = survey
-        })().asCallback(next)
-    }
-
+export function initMemberSurveyPermissionController(
+    app: Express.Express, 
+    modelsFactory: Factory, 
+    resourcesMiddleware: ResourcesMiddleware, 
+    authMiddleware: AuthMiddleware
+) {
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
             return (async (): Bluebird<void> => {
-                const survey = <ModelTypes.SurveyInstance> res.locals.survey
-
                 switch (req.auth.type) {
                     case 'member': {
                         const member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
 
-                        if (member.organization_id !== survey.organization_id) {
+                        if (member.organization_id !== res.locals.survey.organization_id) {
                             throw new Errors.UnauthorizedError()
                         }
                         res.locals.auth_member = member
@@ -51,9 +40,9 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        loadSurvey,
+        resourcesMiddleware.loadSurvey,
         checkAuth(Capability.Edit),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -89,7 +78,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
     app.get('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -109,9 +98,9 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        loadSurvey,
+        resourcesMiddleware.loadSurvey,
         checkAuth(Capability.Delete),
-        Middleware.validationErrorHandlingFn
+        Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
 
