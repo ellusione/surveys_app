@@ -8,7 +8,7 @@ import Factory from '../../models/factory'
 
 const expect = chai.expect
 
-describe('Survey test', () => {
+describe('User test', () => {
     type User = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
     let modelsFactory: Factory

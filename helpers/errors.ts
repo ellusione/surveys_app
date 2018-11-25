@@ -30,8 +30,8 @@ export class NotFoundError extends BaseError {
 export class ForbiddenError extends BaseError {
     name = 'ForbiddenError'
     statusCode = 403
-    constructor (message: string) {
-        super(message)
+    constructor (message?: string) {
+        super(message || 'unauthorized request')
         Object.setPrototypeOf(this, ForbiddenError.prototype);
     }
 }

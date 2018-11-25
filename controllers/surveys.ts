@@ -1,12 +1,12 @@
 import Express from 'express';
-import Validator, { check } from 'express-validator/check'
+import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Role, Capability} from '../roles'
+import {Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
 export function initSurveysController(app: Express.Express, modelsFactory: Factory) {
@@ -18,7 +18,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = authMiddleware.checkMemberAuth(req.auth, capability)
+                        res.locals.auth_member = authMiddleware.getAndCheckMemberAuth(req.auth, capability)
                         return
                     }
 
@@ -34,7 +34,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = authMiddleware.checkMemberSurveyAuth(req.auth, req.params.survey_id, capability)
+                        res.locals.auth_member = authMiddleware.getAndCheckMemberSurveyAuth(req.auth, req.params.survey_id, capability)
                         return
                     }
 

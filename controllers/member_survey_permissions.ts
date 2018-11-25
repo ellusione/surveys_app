@@ -32,7 +32,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
 
                 switch (req.auth.type) {
                     case 'member': {
-                        const member = await authMiddleware.checkMemberAuth(req.auth, capability)
+                        const member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
 
                         if (member.organization_id !== survey.organization_id) {
                             throw new Errors.UnauthorizedError()

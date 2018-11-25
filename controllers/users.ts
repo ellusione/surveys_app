@@ -7,7 +7,7 @@ import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import * as Errors from '../helpers/errors'
-import {Role, Capability} from '../roles'
+import {Capability} from '../roles'
 import { isNullOrUndefined } from 'util';
 
 export function initUsersController(app: Express.Express, modelsFactory: Factory) {
@@ -16,14 +16,19 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
     function checkAuth (capability: Capability) {
         return async (req: Express.Request) => {
             switch (req.auth.type) {
-                case 'none': throw new Errors.UnauthorizedError()
-
                 case 'user': {
                     authMiddleware.checkUserAuth(req.auth, req.params.user_id)
                     return
                 }
 
-                case 'member': await authMiddleware.checkUserMemberAuth(req.auth, req.params.user_id, capability)
+                case 'member': {
+                    if (req.auth.id !== req.params.user_id) {
+                        await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
+                    }
+                    return
+                }
+
+                default: throw new Errors.UnauthorizedError()
             }
         }
     }

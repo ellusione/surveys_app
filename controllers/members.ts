@@ -19,7 +19,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = await authMiddleware.checkMemberAuth(req.auth, capability)
+                        res.locals.auth_member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
                         return
                     }
 

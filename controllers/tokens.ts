@@ -24,12 +24,8 @@ export function initTokensController(app: Express.Express, modelsFactory: Factor
                 }
             })
 
-            if (!user) {
-                throw new Errors.NotFoundError('user')
-            }
-
-            if (!bcrypt.compareSync(req.body.password, user.password)) {
-                throw new Errors.ForbiddenError('invalid password')
+            if (!user || !bcrypt.compareSync(req.body.password, user.password)) {
+                throw new Errors.ForbiddenError()
             }
 
             const token = jwt.sign({

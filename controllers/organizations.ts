@@ -31,7 +31,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        const member = await authMiddleware.checkMemberAuth(req.auth, capability)
+                        const member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
 
                         if (member.organization_id !== req.params.organization_id) {
                             throw new Errors.UnauthorizedError()
