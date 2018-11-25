@@ -233,3 +233,11 @@ type MemberAuth = UserAuth & {
             res.locals.survey = survey
         })().asCallback()
     }
+
+ // "files": [
+  //   "*.ts",
+  //   "custom.d.ts"
+  // ],
+
+
+        "env": {"TS_NODE_FILES": "true"},

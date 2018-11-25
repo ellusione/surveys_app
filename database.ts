@@ -1,10 +1,11 @@
 
 import Sequelize from 'sequelize'
 import Factory from './models/factory'
-import * as config from './config'
+//import * as config from './config'
 
-const sequelize = new Sequelize(
-    `${config.DATABASE.username}://${config.DATABASE.password}@${config.DATABASE.host}:${config.DATABASE.port}/surveys`,
+// const a = `postgres//${config.DATABASE.username}:${config.DATABASE.password}@${config.DATABASE.host}:${config.DATABASE.port}/surveys`
+
+const sequelize = new Sequelize('postgres://postgres:123@localhost:5432/surveys',
     { dialect: 'postgres' }
 )
 

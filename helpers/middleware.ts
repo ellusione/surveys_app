@@ -13,12 +13,12 @@ export function calculatePaginationOffset (page: number, limit: number) {
 export function parseAuthHeader (
     req: Express.Request, res: Express.Response, next: Function
 ) {
-    return (async (): Bluebird<Express.Response> => {
+    return (async (): Bluebird<void> => {
         const token = req.headers['x-access-token'];
 
         if (!token) {
             req.auth = {type: 'none'}
-            return next()
+            return
         }
 
         if (typeof token !== 'string') {
@@ -46,7 +46,7 @@ export function parseAuthHeader (
 
         if (!organization_id) {
             req.auth = {type: 'user', id}
-            return next()
+            return
         }
 
         if (typeof organization_id !== 'number') {
@@ -54,7 +54,7 @@ export function parseAuthHeader (
         }
 
         req.auth = {type: 'member', id, organization_id}
-        return next()
+        return
     })().asCallback(next)
 }
 

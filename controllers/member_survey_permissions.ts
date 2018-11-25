@@ -47,9 +47,9 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         }
     }
 
-    app.post('/surveys/:survey_id/users/:user_id/permissions', [
+    app.post('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
-        Validator.param('user_id').isInt({gt: 0}),
+        Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         loadSurvey,
         checkAuth(Capability.Edit),
@@ -62,7 +62,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
-                    user_id: req.params.user_id,
+                    user_id: req.body.user_id,
                     organization_id: survey.organization_id
                 }
             })
@@ -78,7 +78,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             const result = await modelsFactory.memberSurveyPermissionModel 
                 .create({
                     survey_id: req.params.survey_id,
-                    user_id: req.params.user_id,
+                    user_id: req.body.user_id,
                     role_id: req.body.role_id
                 })
 
@@ -86,9 +86,9 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         })().asCallback(next)
     })
     
-    app.get('/surveys/:survey_id/users/:user_id/permissions', [
+    app.get('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
-        Validator.param('user_id').isInt({gt: 0}),
+        Validator.body('user_id').isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -97,7 +97,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             const result = await modelsFactory.memberSurveyPermissionModel.findAll({
                 where: {
                     survey_id: req.params.survey_id,
-                    user_id: req.params.user_id
+                    user_id: req.body.user_id
                 }
             })
 
@@ -105,9 +105,9 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         })().asCallback(next)
     })
 
-    app.delete('/surveys/:survey_id/users/:user_id/permissions', [
+    app.delete('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
-        Validator.param('user_id').isInt({gt: 0}),
+        Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         loadSurvey,
         checkAuth(Capability.Delete),
@@ -121,7 +121,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                     .destroy({
                         where: {
                             survey_id: req.params.survey_id,
-                            user_id: req.params.user_id,
+                            user_id: req.body.user_id,
                             role_id: req.body.role_id
                         }
                     })
@@ -133,7 +133,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                 .destroy({
                     where: {
                         survey_id: req.params.survey_id,
-                        user_id: req.params.user_id
+                        user_id: req.body.user_id
                     }
                 })
 

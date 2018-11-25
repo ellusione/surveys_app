@@ -13,11 +13,11 @@ describe('User test', () => {
     const promisifedRequest = bluebird.Promise.promisify(request)
     let modelsFactory: Factory
     
-    async function makeUser (name: string) {
+    async function makeUser (name: string, username: string, password: string) {
         const res = await promisifedRequest({
             url:'http://localhost:3000/users',
             method: 'POST',
-            body: {name},
+            body: {name, username, password},
             json: true
         })
         expect(res.statusCode).to.equal(200)
@@ -39,7 +39,7 @@ describe('User test', () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/users',
                 method: 'POST',
-                body: {'name_false': 'a'},
+                body: {'name_false': 'a', username: 'b', password: 'c'},
                 json: true
             })
 
@@ -51,7 +51,7 @@ describe('User test', () => {
         })
 
         it('User created with proper req body', async () => {
-            const user = await makeUser('a')
+            const user = await makeUser('a', 'username12', 'password34')
 
             expect(user.createdAt).to.exist
             expect(user.updatedAt).to.exist
@@ -65,7 +65,7 @@ describe('User test', () => {
         let user: User
 
         beforeEach(async () => {
-            user = await makeUser('a')
+            user = await makeUser('a', 'username12', 'password34')
         })
 
         it('Successfully find the user', async () => {
@@ -95,9 +95,9 @@ describe('User test', () => {
 
         beforeEach(async () => {
             users = []
-            users.push(await makeUser('a'))
-            users.push(await makeUser('b'))
-            users.push(await makeUser('c'))
+            users.push(await makeUser('a', 'username12', 'password34'))
+            users.push(await makeUser('username12', 'username12', 'password34'))
+            users.push(await makeUser('password34', 'username12', 'password34'))
         })
 
         it('Successfully find the users', async () => {
@@ -151,7 +151,7 @@ describe('User test', () => {
         let user: User
 
         beforeEach(async () => {
-            user = await makeUser('a')
+            user = await makeUser('a', 'username12', 'password34')
         })
 
         it('Successfully update the user name', async () => {
@@ -206,7 +206,7 @@ describe('User test', () => {
         let user: User
 
         beforeEach(async () => {
-            user = await makeUser('a')
+            user = await makeUser('a', 'username12', 'password34')
         })
 
         it('Successfully delete the user', async () => {

@@ -9,6 +9,7 @@ import { isNullOrUndefined } from 'util';
 import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
+type PaginationResult = {rows: ModelTypes.MemberInstance[], count: number}
 
 export function initMembersController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
@@ -64,19 +65,33 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
         })().asCallback(next)
     })
         
-    app.get('/members', [
+    app.get('/members', [ //make mutually exclusive
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
+        Validator.query('user_id').optional().isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
+            let result: PaginationResult
+
+            const userId = req.query.user_id
+
+            if (userId) {
+                result = await modelsFactory.memberModel.findAndCountAll({
+                    where: {
+                        user_id: userId
+                    }
+                })
+                return res.json(result) 
+            }
+
             const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
-            const result = await modelsFactory.memberModel.findAndCountAll({
+            result = await modelsFactory.memberModel.findAndCountAll({
                 offset: page * limit,
                 limit
             })

@@ -14,22 +14,25 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
     const authMiddleware = makeAuthMiddleware(modelsFactory) //maybe move to injection to optimize objects count (to make shared)
 
     function checkAuth (capability: Capability) {
-        return async (req: Express.Request) => {
-            switch (req.auth.type) {
-                case 'user': {
-                    authMiddleware.checkUserAuth(req.auth, req.params.user_id)
-                    return
-                }
+        return (req: Express.Request, res: Express.Response, next: Function) => {
 
-                case 'member': {
-                    if (req.auth.id !== req.params.user_id) {
-                        await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
+            return (async (): Bluebird<void> => {
+                switch (req.auth.type) {
+                    case 'user': {
+                        authMiddleware.checkUserAuth(req.auth, req.params.user_id)
+                        return
                     }
-                    return
-                }
 
-                default: throw new Errors.UnauthorizedError()
-            }
+                    case 'member': {
+                        if (req.auth.id !== req.params.user_id) {
+                            await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
+                        }
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback(next)
         }
     }
 
