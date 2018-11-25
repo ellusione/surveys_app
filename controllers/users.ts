@@ -32,14 +32,14 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'user': {
-                        if (req.auth.id !== Number(req.params.user_id)) {
+                        if (req.auth.id !== res.locals.user.id) {
                             throw new Errors.UnauthorizedError()
                         }
                         return
                     }
 
                     case 'member': {
-                        if (req.auth.id !== Number(req.params.user_id)) {
+                        if (req.auth.id !== res.locals.user.id) {
                             await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
                         }
                         return
@@ -96,69 +96,45 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-
-        return (async (): Bluebird<Express.Response> => {
-            const userId = req.params.user_id
-
-            const result = await modelsFactory.userModel.findById(userId)
-            
-            if (result) {
-                return res.json(result) 
-            }
-
-            throw new Errors.NotFoundError(ModelTypes.userName, userId)
-        })().asCallback(next)
+        return res.json(res.locals.user)
     })
 
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        loadUser,
         checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const userId = req.params.user_id
-        
-            const result = await modelsFactory.userModel
-                .findById(userId)
+            const user = <ModelTypes.UserInstance> res.locals.user
 
-            if (!result) {
-                throw new Errors.NotFoundError(ModelTypes.userName, userId)
+            if (user.name === req.body.name) {
+                return res.json(user) 
             }
 
-            if (result.name === req.body.name) {
-                return res.json(result) 
-            }
+            await user.update({name: req.body.name})
 
-            await result.update({name: req.body.name})
-
-            return res.json(result) 
+            return res.json(user) 
         })().asCallback(next)
     })
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
+        loadUser,
         checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const userId = req.params.user_id
+            const user = <ModelTypes.UserInstance> res.locals.user
 
-            const result = await modelsFactory.userModel.destroy({
-                where: {
-                    id: userId
-                }
-            })
-            
-            if (result === 1) {
-                return res.sendStatus(200)
-            }
-
-            throw new Errors.NotFoundError(ModelTypes.userName, userId)
+            await user.destroy()
+           
+            return res.sendStatus(200)
         })().asCallback(next)
     })
 }

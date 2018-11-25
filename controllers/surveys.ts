@@ -12,6 +12,19 @@ import * as Errors from '../helpers/errors'
 export function initSurveysController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
 
+    function loadSurvey (req: Express.Request, res: Express.Response, next: Function) {
+        return (async (): Bluebird<void> => {
+            const surveyId = req.params.survey_id
+            const survey = await modelsFactory.surveyModel.findById(surveyId)
+
+            if (!survey) {
+                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
+            }
+
+            res.locals.survey = survey
+        })().asCallback(next)
+    }
+
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
@@ -34,7 +47,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = authMiddleware.getAndCheckMemberSurveyAuth(req.auth, req.params.survey_id, capability)
+                        res.locals.auth_member = authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey.id, capability)
                         return
                     }
 
@@ -107,53 +120,39 @@ export function initSurveysController(app: Express.Express, modelsFactory: Facto
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        loadSurvey,
         checkSurveyAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const surveyId = req.params.survey_id
+            const survey = <ModelTypes.SurveyInstance> res.locals.survey
 
-            const result = await modelsFactory.surveyModel
-                .findById(surveyId)
-
-            if (!result) {
-                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
+            if (survey.name === req.body.name) {
+                return res.json(survey) 
             }
 
-            if (result.name === req.body.name) {
-                return res.json(result) 
-            }
+            await survey.update({name: req.body.name})
 
-            await result.update({name: req.body.name})
-
-            return res.json(result) 
+            return res.json(survey)
         })().asCallback(next)
     })
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
+        loadSurvey,
         checkSurveyAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const surveyId = req.params.survey_id
+            const survey = <ModelTypes.SurveyInstance> res.locals.survey
 
-            const result = await modelsFactory.surveyModel
-                .destroy({
-                    where: {
-                        id: surveyId
-                    }
-                })
-
-            if (result === 1) {
-                return res.status(200)
-            }
-
-            throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
+            await survey.destroy()
+            
+            return res.sendStatus(200)
         })().asCallback(next)
     })
 }

@@ -208,7 +208,7 @@ describe('User test', () => {
                 json: true,
                 headers: {'x-access-token': userToken}
             })
-            expect(res.statusCode).to.equal(401)
+            expect(res.statusCode).to.equal(404)
         })
 
         it('Error on updating the user with invalid name', async () => {
