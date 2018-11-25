@@ -1,6 +1,6 @@
 
 import Sequelize from 'sequelize'
-import * as Models from './models'
+import Factory from './models/factory'
 import * as config from './config'
 
 const sequelize = new Sequelize(
@@ -8,11 +8,11 @@ const sequelize = new Sequelize(
     { dialect: 'postgres' }
 )
 
-export async function initDB(): Promise<Models.Factory> {
+export async function initDB(): Promise<Factory> {
     await sequelize.authenticate()
     console.log("DB connection successful")
     
-    const modelsFactory = await new Models.Factory(sequelize)
+    const modelsFactory = await new Factory(sequelize)
     await sequelize.sync({force: true})
 
     console.log("Sequelize sync successful")

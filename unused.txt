@@ -219,3 +219,17 @@ type MemberAuth = UserAuth & {
     checkRequiredAuth(auth: Auth) {     
         throw new Errors.UnauthorizedError()
     }
+
+
+    function loadSurvey (req: Express.Request, res: Express.Response, next: Function) {
+        return (async (): Bluebird<void> => {
+            const surveyId = req.params.survey_id
+            const survey = await modelsFactory.surveyModel.findById(surveyId)
+
+            if (!survey) {
+                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
+            }
+
+            res.locals.survey = survey
+        })().asCallback()
+    }

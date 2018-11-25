@@ -1,48 +1,63 @@
 import Express from 'express';
-import Validator from 'express-validator/check'
+import Validator, { check } from 'express-validator/check'
 import Bluebird from 'bluebird'
-import * as Models from '../models'
+import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
-export function initSurveysController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initSurveysController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
 
+    function checkAuth (capability: Capability) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+
+            return (async (): Bluebird<void> => {
+                switch (req.auth.type) {
+                    case 'member': {
+                        res.locals.auth_member = authMiddleware.checkMemberAuth(req.auth, capability)
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback()
+        }
+    }
+
+    function checkSurveyAuth (capability: Capability) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+
+            return (async (): Bluebird<void> => {
+                switch (req.auth.type) {
+                    case 'member': {
+                        res.locals.auth_member = authMiddleware.checkMemberSurveyAuth(req.auth, req.params.survey_id, capability)
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback(next)
+        }
+    }
+
     app.post('/surveys', [
-        Validator.body('creator_id').isInt({gt: 0}),
-        Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
+        checkAuth(Capability.Create),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = await modelsFactory.memberModel.findOne({
-                where: {
-                    user_id: req.body.creator_id,
-                    organization_id: req.body.organization_id
-                }
-            })
-
-            if (!member) {
-                throw new Errors.NotFoundError('member')
-            }
-
-            const role = Role.findByRoleId(member.role_id)
-
-            if (!role.capabilities.get(Capability.Create)) {
-                throw new Errors.ForbiddenError(
-                    'Member not authorized to create survey'
-                )
-            }
+            const member = <ModelTypes.MemberInstance> res.locals.auth_member
 
             const result = await modelsFactory.surveyModel.create({
                 name: req.body.name, 
-                creator_id: req.body.creator_id, 
-                organization_id: req.body.organization_id
+                creator_id: member.user_id, 
+                organization_id: member.organization_id
             })
 
             return res.json(result)   
@@ -85,56 +100,26 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
             if (result) {
                 return res.json(result) 
             }
-            throw new Errors.NotFoundError(Models.surveyName, surveyId)
+            throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
         })().asCallback(next)
     })
 
     app.patch('/surveys/:survey_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
+        checkSurveyAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = await modelsFactory.memberModel.findOne({
-                where: {
-                    user_id: req.body.user_id,
-                    organization_id: req.body.organization_id
-                }
-            })
-
-            if (!member) {
-                throw new Errors.NotFoundError('member')
-            }
-
-            const role = Role.findByRoleId(member.role_id)
-
-            if (!role.capabilities.get(Capability.Edit)) {
-
-                const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
-                    where: {
-                        user_id: req.body.user_id,
-                        survey_id: req.params.survey_id
-                    }
-                })
-
-                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capability.Edit)) {
-                    throw new Errors.ForbiddenError(
-                        'Member not authorized to edit survey'
-                    )
-                }
-            }
-        
             const surveyId = req.params.survey_id
 
             const result = await modelsFactory.surveyModel
                 .findById(surveyId)
 
             if (!result) {
-                throw new Errors.NotFoundError(Models.surveyName, surveyId)
+                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
             }
 
             if (result.name === req.body.name) {
@@ -148,42 +133,13 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
     })
 
     app.delete('/surveys/:survey_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
-        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
+        checkSurveyAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = await modelsFactory.memberModel.findOne({
-                where: {
-                    user_id: req.body.creator_id,
-                    organization_id: req.body.organization_id
-                }
-            })
-
-            if (!member) {
-                throw new Errors.NotFoundError('member')
-            }
-
-            const role = Role.findByRoleId(member.role_id)
-
-            if (!role.capabilities.get(Capability.Delete)) {
-                const permission = await modelsFactory.memberSurveyPermissionModel.findOne({
-                    where: {
-                        user_id: req.body.user_id,
-                        survey_id: req.params.survey_id
-                    }
-                })
-
-                if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capability.Delete)) {
-                    throw new Errors.ForbiddenError(
-                        'Member not authorized to delete survey'
-                    )
-                }
-            }
-
             const surveyId = req.params.survey_id
 
             const result = await modelsFactory.surveyModel
@@ -197,7 +153,7 @@ export function initSurveysController(app: Express.Express, modelsFactory: Model
                 return res.status(200)
             }
 
-            throw new Errors.NotFoundError(Models.surveyName, surveyId)
+            throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
         })().asCallback(next)
     })
 }

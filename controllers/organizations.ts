@@ -1,19 +1,54 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
-import * as Models from '../models'
+import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Role, Capability} from '../roles'
+import {Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
-export function initOrganizationsController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initOrganizationsController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
+
+    function checkAuth (req: Express.Request, res: Express.Response, next: Function) {
+
+        return (async (): Bluebird<void> => {
+            switch (req.auth.type) {
+                case 'user': {
+                    authMiddleware.checkUserAuth(req.auth, req.params.user_id) 
+                    return
+                }
+                default: throw new Errors.UnauthorizedError()
+            }
+        })().asCallback()
+    }
+
+    function checkMemberAuth (capability: Capability) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+
+            return (async (): Bluebird<void> => {
+                switch (req.auth.type) {
+                    case 'member': {
+                        const member = await authMiddleware.checkMemberAuth(req.auth, capability)
+
+                        if (member.organization_id !== req.params.organization_id) {
+                            throw new Errors.UnauthorizedError()
+                        }
+                        res.locals.auth_member = member
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback()
+        }
+    }
     
     app.post('/organizations', [
-        Middleware.checkRequiredAuth,
         Validator.body('name').isString(),
+        checkAuth,
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -59,46 +94,26 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             if (result) {
                 return res.json(result) 
             }
-            throw new Errors.NotFoundError(Models.organizationName, organizationId)
+            throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
         })().asCallback(next)
     })
 
     app.patch('/organizations/:organization_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        Validator.body('user_id').isInt({gt: 0}), //HACK. MOVE TO AUTH. FIXME
+        checkMemberAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = req.body.organization_id
-
-            const member = await modelsFactory.memberModel.findOne({
-                where: {
-                    user_id: req.body.user_id,
-                    organization_id: organizationId
-                }
-            })
-
-            if (!member) {
-                throw new Errors.NotFoundError(Models.memberName)
-            }
-
-            const role = Role.findByRoleId(member.role_id)
-
-            if (!role.capabilities.get(Capability.Edit)) {
-                throw new Errors.ForbiddenError(
-                    'Member not authorized to edit organization'
-                )
-            }
+            const organizationId = req.params.organization_id
 
             const result = await modelsFactory.organizationModel
-                .findById(req.params.organization_id)
+                .findById(organizationId)
 
             if (!result) {
-                throw new Errors.NotFoundError(Models.organizationName, organizationId)
+                throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
             }
 
             if (result.name === req.body.name) {
@@ -112,32 +127,13 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
     })
 
     app.delete('/organizations/:organization_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('organization_id').isInt({gt: 0}),
+        checkMemberAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = await modelsFactory.memberModel.findOne({
-                where: {
-                    user_id: req.body.user_id,
-                    organization_id: req.body.organization_id
-                }
-            })
-
-            if (!member) {
-                throw new Errors.NotFoundError(Models.memberName)
-            }
-
-            const role = Role.findByRoleId(member.role_id)
-
-            if (!role.capabilities.get(Capability.Delete)) {
-                throw new Errors.ForbiddenError(
-                    'Member not authorized to delete organization'
-                )
-            }
-
             const organizationId = req.params.organization_id
             
             const result = await modelsFactory.organizationModel
@@ -151,7 +147,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
                 return res.status(200)
             }
 
-            throw new Errors.NotFoundError(Models.organizationName, organizationId)
+            throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
         })().asCallback(next)
     })
 }

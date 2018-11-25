@@ -12,7 +12,6 @@ type MemberAuth = {
     id: number,
     organization_id: number
 }
-
 type Auth = NoneAuth | UserAuth | MemberAuth
 
 declare namespace Express {

@@ -1,7 +1,8 @@
 import * as chai from 'chai'
 import * as uuid from 'uuid'
 chai.use(require('chai-as-promised'))
-import * as Models from '../../models'
+import Factory from '../../models/factory'
+import * as ModelTypes from '../../models'
 import * as MemberSurveyPermissionDefinition from '../../models/member_survey_permission/definition'
 import {getInstanceId} from '../../models/helpers'
 import {initDB} from '../../database'
@@ -10,10 +11,10 @@ const expect = chai.expect
 
 describe('Survey test', () => {
 
-    let modelsFactory: Models.Factory
-    let user: Models.UserInstance
-    let organization: Models.OrganizationInstance
-    let survey: Models.SurveyInstance
+    let modelsFactory: Factory
+    let user: ModelTypes.UserInstance
+    let organization: ModelTypes.OrganizationInstance
+    let survey: ModelTypes.SurveyInstance
 
     before('Init db', async () => {
         modelsFactory = await initDB()

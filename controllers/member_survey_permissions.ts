@@ -1,35 +1,68 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
-import * as Models from '../models'
+import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
-import {Role} from '../roles'
+import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
-export function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initMemberSurveyPermissionController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
     
+    function loadSurvey (req: Express.Request, res: Express.Response, next: Function) {
+        return (async (): Bluebird<void> => {
+            const surveyId = req.params.survey_id
+            const survey = await modelsFactory.surveyModel.findById(surveyId)
+
+            if (!survey) {
+                throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
+            }
+
+            res.locals.survey = survey
+        })().asCallback()
+    }
+
+    function checkAuth (capability: Capability) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+
+            return (async (): Bluebird<void> => {
+                const survey = <ModelTypes.SurveyInstance> res.locals.survey
+
+                switch (req.auth.type) {
+                    case 'member': {
+                        const member = await authMiddleware.checkMemberAuth(req.auth, capability)
+
+                        if (member.organization_id !== survey.organization_id) {
+                            throw new Errors.UnauthorizedError()
+                        }
+                        res.locals.auth_member = member
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback()
+        }
+    }
+
     app.post('/surveys/:survey_id/users/:user_id/permissions', [
-        Middleware.checkRequiredAuth,
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+        loadSurvey,
+        checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const surveyId = req.body.survey_id
-            const survey = await modelsFactory.surveyModel.findById(req.body.survey_id)
-
-            if (!survey) {
-                throw new Errors.NotFoundError(Models.surveyName, surveyId)
-            }
+            const survey = <ModelTypes.SurveyInstance> res.locals.survey
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
-                    user_id: req.body.user_id,
+                    user_id: req.params.user_id,
                     organization_id: survey.organization_id
                 }
             })
@@ -44,8 +77,8 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
 
             const result = await modelsFactory.memberSurveyPermissionModel 
                 .create({
-                    survey_id: req.body.survey_id,
-                    user_id: req.body.user_id,
+                    survey_id: req.params.survey_id,
+                    user_id: req.params.user_id,
                     role_id: req.body.role_id
                 })
 
@@ -63,8 +96,8 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
         return (async (): Bluebird<Express.Response> => {
             const result = await modelsFactory.memberSurveyPermissionModel.findAll({
                 where: {
-                    survey_id: req.body.survey_id,
-                    user_id: req.body.user_id
+                    survey_id: req.params.survey_id,
+                    user_id: req.params.user_id
                 }
             })
 
@@ -73,8 +106,11 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
     })
 
     app.delete('/surveys/:survey_id/users/:user_id/permissions', [
-        Middleware.checkRequiredAuth,
+        Validator.param('survey_id').isInt({gt: 0}),
+        Validator.param('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
+        loadSurvey,
+        checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -84,8 +120,8 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
                 await modelsFactory.memberSurveyPermissionModel 
                     .destroy({
                         where: {
-                            survey_id: req.body.survey_id,
-                            user_id: req.body.user_id,
+                            survey_id: req.params.survey_id,
+                            user_id: req.params.user_id,
                             role_id: req.body.role_id
                         }
                     })
@@ -96,8 +132,8 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             await modelsFactory.memberSurveyPermissionModel 
                 .destroy({
                     where: {
-                        survey_id: req.body.survey_id,
-                        user_id: req.body.user_id
+                        survey_id: req.params.survey_id,
+                        user_id: req.params.user_id
                     }
                 })
 

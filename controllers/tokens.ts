@@ -3,12 +3,12 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
-import * as Models from '../models'
+import Factory from '../models/factory'
 import * as Errors from '../helpers/errors'
 import * as Middleware from '../helpers/middleware'
 import * as config from '../config'
 
-export function initTokensController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initTokensController(app: Express.Express, modelsFactory: Factory) {
 
     app.post('/user_tokens', [
         Validator.body('username').isString(),

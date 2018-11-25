@@ -2,15 +2,31 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as bcrypt from 'bcryptjs'
-import * as Models from '../models'
+import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import * as Errors from '../helpers/errors'
 import {Role, Capability} from '../roles'
 import { isNullOrUndefined } from 'util';
 
-export function initUsersController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initUsersController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory) //maybe move to injection to optimize objects count (to make shared)
+
+    function checkAuth (capability: Capability) {
+        return async (req: Express.Request) => {
+            switch (req.auth.type) {
+                case 'none': throw new Errors.UnauthorizedError()
+
+                case 'user': {
+                    authMiddleware.checkUserAuth(req.auth, req.params.user_id)
+                    return
+                }
+
+                case 'member': await authMiddleware.checkUserMemberAuth(req.auth, req.params.user_id, capability)
+            }
+        }
+    }
 
     app.post('/users', [
         Validator.body('name').isString(),
@@ -66,14 +82,14 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
                 return res.json(result) 
             }
 
-            throw new Errors.NotFoundError(Models.userName, userId)
+            throw new Errors.NotFoundError(ModelTypes.userName, userId)
         })().asCallback(next)
     })
 
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        authMiddleware.checkAllAuth(Capability.Edit),
+        checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -85,7 +101,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
                 .findById(userId)
 
             if (!result) {
-                throw new Errors.NotFoundError(Models.userName, userId)
+                throw new Errors.NotFoundError(ModelTypes.userName, userId)
             }
 
             if (result.name === req.body.name) {
@@ -100,7 +116,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        authMiddleware.checkAllAuth(Capability.Delete),
+        checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -118,7 +134,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Models.
                 return res.sendStatus(200)
             }
 
-            throw new Errors.NotFoundError(Models.userName, userId)
+            throw new Errors.NotFoundError(ModelTypes.userName, userId)
         })().asCallback(next)
     })
 }

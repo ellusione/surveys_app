@@ -1,36 +1,54 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
-import * as Models from '../models'
+import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Role} from '../roles'
+import {Role, Capability} from '../roles'
 import * as Errors from '../helpers/errors'
 
 
-export function initMembersController(app: Express.Express, modelsFactory: Models.Factory) {
+export function initMembersController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
     
+    function checkAuth (capability: Capability) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+
+            return (async (): Bluebird<void> => {
+                switch (req.auth.type) {
+                    case 'member': {
+                        res.locals.auth_member = await authMiddleware.checkMemberAuth(req.auth, capability)
+                        return
+                    }
+
+                    default: throw new Errors.UnauthorizedError()
+                }
+            })().asCallback()
+        }
+    }
+
     app.post('/members', [
-        Middleware.checkRequiredAuth,
         Validator.body('user_id').isInt({gt: 0}),
-        Validator.body('organization_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+        checkAuth(Capability.Create),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
+            const organizationId = (<ModelTypes.MemberInstance> res.locals.auth_member).organization_id
+
             const userId = req.body.user_id
 
             const user = await modelsFactory.userModel.findById(userId)
 
             if (!user) {
-                throw new Errors.NotFoundError(Models.userName, userId)
+                throw new Errors.NotFoundError(ModelTypes.userName, userId)
             }
 
-            const organization = await modelsFactory.organizationModel.findById(req.body.organization_id)
+            const organization = await modelsFactory.organizationModel.findById(organizationId)
 
             if (!organization) {
                 throw new Errors.NotFoundError('Organization not found')
@@ -80,14 +98,14 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             if (result) {
                 res.json(result) 
             }
-            throw new Errors.NotFoundError(Models.memberName, memberId)
+            throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
         })().asCallback(next)
     })
 
     app.patch('/members/:member_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
+        checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -97,7 +115,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
             const result = await modelsFactory.memberModel.findById(memberId)
 
             if (!result) {
-                throw new Errors.NotFoundError(Models.memberName, memberId)
+                throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
             }
 
             if (result.role_id === req.body.role_id) {
@@ -111,8 +129,8 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
     })
 
     app.delete('/members/:member_id', [
-        Middleware.checkRequiredAuth,
         Validator.param('member_id').isInt({gt: 0}),
+        checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -129,7 +147,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Model
                 return res.status(200)
             }
 
-            throw new Errors.NotFoundError(Models.memberName, memberId)
+            throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
         })().asCallback(next)
     })
 }

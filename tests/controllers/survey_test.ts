@@ -4,14 +4,14 @@ import request from 'request'
 import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
-import * as Models from '../../models'
+import Factory from '../../models/factory'
 
 const expect = chai.expect
 
 describe('Survey test', () => {
     type Survey = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
-    let modelsFactory: Models.Factory
+    let modelsFactory: Factory
     
     async function makeSurvey (name: string) {
         const res = await promisifedRequest({

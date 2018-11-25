@@ -1,23 +1,24 @@
-import * as Models from '../../models'
+import { expect } from 'chai';
+import Factory from '../../models/factory'
+import * as ModelTypes from '../../models'
 import {getInstanceId} from '../../models/helpers'
 import {initDB} from '../../database'
 import * as Roles from '../../roles'
 import {getDeletionRunnerFn} from '../../job'
-import { expect } from 'chai';
 
 describe('Survey test', () => {
 
-    let modelsFactory: Models.Factory
+    let modelsFactory: Factory
     let deletionRunnerFn: Function
-    let user: Models.UserInstance
-    let organization: Models.OrganizationInstance
-    let survey: Models.SurveyInstance
+    let user: ModelTypes.UserInstance
+    let organization: ModelTypes.OrganizationInstance
+    let survey: ModelTypes.SurveyInstance
 
     before('Init db', async () => {
         modelsFactory = await initDB()
         deletionRunnerFn = getDeletionRunnerFn(modelsFactory)
 
-        user = await modelsFactory.userModel.create({name: 'user a'})
+        user = await modelsFactory.userModel.create({name: 'user a', username: 'b', password: 'c'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
     })
 

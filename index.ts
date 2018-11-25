@@ -3,11 +3,11 @@ import Http from 'http';
 import {initRoutes} from './controllers'
 import * as Middleware from './helpers/middleware'
 import {initDB} from './database'
-import * as Models from './models'
+import Factory from './models/factory'
 
 const port = process.env.PORT || 3000
 
-export async function init(modelsFactory: Models.Factory) {
+export async function init(modelsFactory: Factory) {
 
     console.log("Done initializing database")
 

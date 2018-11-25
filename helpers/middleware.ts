@@ -1,10 +1,61 @@
 
 import Express from 'express';
 import Validator from 'express-validator/check'
+import jwt from 'jsonwebtoken'
+import Bluebird from 'bluebird'
 import * as Errors from './errors'
+import * as config from '../config'
 
 export function calculatePaginationOffset (page: number, limit: number) {
     return limit*(page-1)
+}
+
+export function parseAuthHeader (
+    req: Express.Request, res: Express.Response, next: Function
+) {
+    return (async (): Bluebird<Express.Response> => {
+        const token = req.headers['x-access-token'];
+
+        if (!token) {
+            req.auth = {type: 'none'}
+            return next()
+        }
+
+        if (typeof token !== 'string') {
+            throw new Errors.UnauthorizedError('invalid token format')
+        }
+
+        let auth: any
+        try {
+            auth = jwt.verify(token, config.AUTH_TOKENS.secret)
+        } catch (err) {
+            const error = <Error>err
+            throw new Errors.UnauthorizedError(error.message)
+        }
+
+        if (typeof auth !== 'object') {
+            throw new Errors.UnauthorizedError('invalid token format')
+        }
+
+        const id = auth['id']
+        const organization_id = auth['organization_id']
+
+        if (!id || typeof id !== 'number') {
+            throw new Errors.UnauthorizedError('invalid token format')
+        }
+
+        if (!organization_id) {
+            req.auth = {type: 'user', id}
+            return next()
+        }
+
+        if (typeof organization_id !== 'number') {
+            throw new Errors.UnauthorizedError('invalid token format')
+        }
+
+        req.auth = {type: 'member', id, organization_id}
+        return next()
+    })().asCallback(next)
 }
 
 export function validationErrorHandlingFn (
