@@ -26,7 +26,7 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
 
                     default: throw new Errors.UnauthorizedError()
                 }
-            })().asCallback()
+            })().asCallback(next)
         }
     }
 

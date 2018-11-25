@@ -25,7 +25,7 @@ export function initTokensController(app: Express.Express, modelsFactory: Factor
             })
 
             if (!user || !bcrypt.compareSync(req.body.password, user.password)) {
-                throw new Errors.ForbiddenError()
+                throw new Errors.UnauthorizedError()
             }
 
             const token = jwt.sign({
@@ -57,7 +57,7 @@ export function initTokensController(app: Express.Express, modelsFactory: Factor
             })
 
             if (!member) {
-                throw new Errors.NotFoundError('member')
+                throw new Errors.UnauthorizedError()
             }
 
             const token = jwt.sign({

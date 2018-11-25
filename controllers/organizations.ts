@@ -6,24 +6,11 @@ import * as ModelTypes from '../models'
 import * as Middleware from '../helpers/middleware'
 import makeAuthMiddleware from '../helpers/auth_middleware'
 import { isNullOrUndefined } from 'util';
-import {Capability} from '../roles'
+import {Capability, adminRole} from '../roles'
 import * as Errors from '../helpers/errors'
 
 export function initOrganizationsController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory)
-
-    function checkAuth (req: Express.Request, res: Express.Response, next: Function) {
-
-        return (async (): Bluebird<void> => {
-            switch (req.auth.type) {
-                case 'user': {
-                    authMiddleware.checkUserAuth(req.auth, req.params.user_id) 
-                    return
-                }
-                default: throw new Errors.UnauthorizedError()
-            }
-        })().asCallback()
-    }
 
     function checkMemberAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
@@ -42,19 +29,28 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
 
                     default: throw new Errors.UnauthorizedError()
                 }
-            })().asCallback()
+            })().asCallback(next)
         }
     }
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        checkAuth,
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
+            if (req.auth.type !== 'user') {
+                throw new Errors.UnauthorizedError()
+            }
+
             const result = await modelsFactory.organizationModel.create({name: req.body.name})
+
+            await modelsFactory.memberModel.create({
+                user_id: req.auth.id,
+                organization_id: <number> result.id,
+                role_id: adminRole.id
+            })
 
             return res.json(result)
         })().asCallback(next)

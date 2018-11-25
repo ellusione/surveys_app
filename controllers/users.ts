@@ -19,7 +19,9 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'user': {
-                        authMiddleware.checkUserAuth(req.auth, req.params.user_id)
+                        if (req.auth.id !== req.params.user_id) {
+                            throw new Errors.UnauthorizedError()
+                        }
                         return
                     }
 

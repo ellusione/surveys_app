@@ -21,7 +21,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
             }
 
             res.locals.survey = survey
-        })().asCallback()
+        })().asCallback(next)
     }
 
     function checkAuth (capability: Capability) {
@@ -43,7 +43,7 @@ export function initMemberSurveyPermissionController(app: Express.Express, model
 
                     default: throw new Errors.UnauthorizedError()
                 }
-            })().asCallback()
+            })().asCallback(next)
         }
     }
 

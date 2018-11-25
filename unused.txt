@@ -231,7 +231,7 @@ type MemberAuth = UserAuth & {
             }
 
             res.locals.survey = survey
-        })().asCallback()
+        })().asCallback(next)
     }
 
  // "files": [

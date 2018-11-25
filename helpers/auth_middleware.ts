@@ -22,12 +22,6 @@ export default function makeAuthMiddleware(modelsFactory: Factory) {
 
     return {
 
-        checkUserAuth (auth: UserAuth, userId: number) {
-            if (auth.id !== userId) {
-                throw new Errors.UnauthorizedError()
-            }
-        },
-
         async getAndCheckMemberAuth (auth: MemberAuth, capability: Capability) {
             const member = await getMemberAuth(auth)
 
