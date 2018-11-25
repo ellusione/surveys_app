@@ -65,10 +65,11 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
         })().asCallback(next)
     })
         
-    app.get('/members', [ //make mutually exclusive
+    app.get('/members', [ 
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
         Validator.query('user_id').optional().isInt({gt: 0}),
+        Validator.query('organization_id').optional().isInt({gt: 0}),
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -78,21 +79,27 @@ export function initMembersController(app: Express.Express, modelsFactory: Facto
 
             const userId = req.query.user_id
 
-            if (userId) {
-                result = await modelsFactory.memberModel.findAndCountAll({
-                    where: {
-                        user_id: userId
-                    }
-                })
-                return res.json(result) 
+            const organizationId = req.query.organization_id
+
+            if (userId && organizationId) { //move to validation chain?
+                throw new Errors.BadRequestError('cannot include both user_id and organization_id in query')
             }
+
+            const whereCondition = userId ? {user_id: userId} : (organizationId ? {organization_id: organizationId} : null)
 
             const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
-            result = await modelsFactory.memberModel.findAndCountAll({
-                offset: page * limit,
+            const offset = Middleware.calculatePaginationOffset(page, limit)
+
+            result = await modelsFactory.memberModel.findAndCountAll(
+                whereCondition ? {
+                    where: whereCondition,
+                    offset,
+                    limit
+                } : {
+                offset,
                 limit
             })
 

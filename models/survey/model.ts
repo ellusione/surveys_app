@@ -23,7 +23,10 @@ export const sequelizeAttributes = {
         references: {
             model: OrganizationDefinition.organizationTableName, key: 'id' 
         }
-    }
+    },
+    created_at: Sequelize.DATE,
+    updated_at: Sequelize.DATE,
+    deleted_at: Sequelize.DATE
 }
 
 export default (

@@ -5,25 +5,16 @@ import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
 import Factory from '../../models/factory'
+import * as Helper from './helper'
 
 const expect = chai.expect
 
 describe('User test', () => {
     type User = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
+    const username = 'bq23'
+    const password = 'cddsw'  
     let modelsFactory: Factory
-    
-    async function makeUser (name: string, username: string, password: string) {
-        const res = await promisifedRequest({
-            url:'http://localhost:3000/users',
-            method: 'POST',
-            body: {name, username, password},
-            json: true
-        })
-        expect(res.statusCode).to.equal(200)
-        expect(res.body).to.exist
-        return res.body
-    }
 
     before('Init db and server with routes', async () => {
         modelsFactory = await initDB()
@@ -39,7 +30,7 @@ describe('User test', () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/users',
                 method: 'POST',
-                body: {'name_false': 'a', username: 'b', password: 'c'},
+                body: {'name_false': 'a', username, password},
                 json: true
             })
 
@@ -51,11 +42,11 @@ describe('User test', () => {
         })
 
         it('User created with proper req body', async () => {
-            const user = await makeUser('a', 'username12', 'password34')
+            const user = await Helper.makeUser('a', username, password)
 
-            expect(user.createdAt).to.exist
-            expect(user.updatedAt).to.exist
-            expect(user.deletedAt).to.not.exist
+            expect(user.created_at).to.exist
+            expect(user.updated_at).to.exist
+            expect(user.deleted_at).to.not.exist
             expect(user.id).to.be.an('number')
             expect(user.name).to.equal('a')
         })
@@ -65,7 +56,10 @@ describe('User test', () => {
         let user: User
 
         beforeEach(async () => {
-            user = await makeUser('a', 'username12', 'password34')
+            const res =await modelsFactory.userModel.findAll()
+            console.log('found')
+            console.log(res)
+            user = await Helper.makeUser('a', username, password)
         })
 
         it('Successfully find the user', async () => {
@@ -95,9 +89,9 @@ describe('User test', () => {
 
         beforeEach(async () => {
             users = []
-            users.push(await makeUser('a', 'username12', 'password34'))
-            users.push(await makeUser('username12', 'username12', 'password34'))
-            users.push(await makeUser('password34', 'username12', 'password34'))
+            users.push(await Helper.makeUser('a', username, password))
+            users.push(await Helper.makeUser('b', username+'b', password))
+            users.push(await Helper.makeUser('c', username+'c', password))
         })
 
         it('Successfully find the users', async () => {
@@ -149,17 +143,24 @@ describe('User test', () => {
 
     describe('Patch user', () => {
         let user: User
+        let userToken: string
 
         beforeEach(async () => {
-            user = await makeUser('a', 'username12', 'password34')
+            user = await Helper.makeUser('a', username, password)
+        })
+
+        beforeEach(async () => {
+            userToken = await Helper.makeUserToken(username, password)
         })
 
         it('Successfully update the user name', async () => {
+            const userToken = await Helper.makeUserToken(username, password)
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,
                 method: 'PATCH',
                 body: {name: 'grr'},
-                json: true
+                json: true,
+                headers: {'x-access-token': userToken}
             })
             expect(res.statusCode).to.equal(200)
             expect(res.body).to.exist
@@ -174,18 +175,40 @@ describe('User test', () => {
             expect(foundUserRes.body.name).to.equal('grr')
         })
 
+        it('Error when missing the token', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'PATCH',
+                body: {name: 'grr'},
+                json: true
+            })
+            expect(res.statusCode).to.equal(401)
+        })
+
+        it('Error when the token belongs to the wrong user', async () => {
+            await Helper.makeUser('c', username+'c', password)
+            const otherUserToken = await Helper.makeUserToken(username+'c', password)
+
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'PATCH',
+                body: {name: 'grr'},
+                json: true,
+                headers: {'x-access-token': otherUserToken}
+            })
+            expect(res.statusCode).to.equal(401)
+        })
+
         it('Error on updating missing user', async () => {
             const fakeUserId = user.id+Math.round(10*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${fakeUserId}`,
                 method: 'PATCH',
                 body: {name: 'grr'},
-                json: true
+                json: true,
+                headers: {'x-access-token': userToken}
             })
-            expect(res.statusCode).to.equal(404)
-            expect(res.body).to.exist
-            expect(res.body.errors).to.be.an('array')
-            expect(res.body.errors.length).to.equal(1)
+            expect(res.statusCode).to.equal(401)
         })
 
         it('Error on updating the user with invalid name', async () => {
@@ -193,7 +216,8 @@ describe('User test', () => {
                 url:`http://localhost:3000/users/${user.id}`,
                 method: 'PATCH',
                 body: {name: null},
-                json: true
+                json: true,
+                headers: {'x-access-token': userToken}
             })
             expect(res.statusCode).to.equal(400)
             expect(res.body).to.exist
@@ -204,15 +228,21 @@ describe('User test', () => {
 
     describe('Delete user', () => {
         let user: User
+        let userToken: string
 
         beforeEach(async () => {
-            user = await makeUser('a', 'username12', 'password34')
+            user = await Helper.makeUser('a', username, password)
+        })
+
+        beforeEach(async () => {
+            userToken = await Helper.makeUserToken(username, password)
         })
 
         it('Successfully delete the user', async () => {
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {'x-access-token': userToken}
             })
             expect(res.statusCode).to.equal(200)
 
@@ -223,11 +253,32 @@ describe('User test', () => {
             expect(foundUserRes.statusCode).to.equal(404)
         })
 
+        it('Error when missing the token', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'DELETE'
+            })
+            expect(res.statusCode).to.equal(401)
+        })
+
+        it('Error when the token belongs to the wrong user', async () => {
+            await Helper.makeUser('c', username+'c', password)
+            const otherUserToken = await Helper.makeUserToken(username+'c', password)
+
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/users/${user.id}`,
+                method: 'DELETE',
+                headers: {'x-access-token': otherUserToken}
+            })
+            expect(res.statusCode).to.equal(401)
+        })
+
         it('Fail to delete missing user', async () => {
             const fakeUserId = user.id+Math.round(10*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${fakeUserId}`,
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {'x-access-token': userToken}
             })
             expect(res.statusCode).to.equal(404)
         })

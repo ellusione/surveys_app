@@ -27,7 +27,10 @@ const sequelizeAttributes = {
         type: Sequelize.INTEGER, 
         allowNull: false,
         validate: {min: 1, max: Role.allRoles.size}
-    }
+    },
+    created_at: Sequelize.DATE,
+    updated_at: Sequelize.DATE,
+    deleted_at: {type: Sequelize.DATE, unique: 'unq_user_org' }
 }
 
 export default (sequelize: Sequelize.Sequelize) => {

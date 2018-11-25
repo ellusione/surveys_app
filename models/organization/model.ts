@@ -8,7 +8,10 @@ import * as Definition from './definition'
 
 const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: Sequelize.STRING, allowNull: false}
+    name: {type: Sequelize.STRING, allowNull: false},
+    created_at: Sequelize.DATE,
+    updated_at: Sequelize.DATE,
+    deleted_at: Sequelize.DATE
 }
 
 export default (

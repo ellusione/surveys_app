@@ -160,7 +160,7 @@ export * from './members'
 export * from './organizations'
 export * from './member_survey_permissions'
 
- type User = {id: number, name: string, createdAt: string, updatedAt: string, deletedAt: null}
+ type User = {id: number, name: string, created_at: string, updated_at: string, deleted_at: null}
 
 
 export function sendResponseFn(
@@ -241,3 +241,31 @@ type MemberAuth = UserAuth & {
 
 
         "env": {"TS_NODE_FILES": "true"},
+
+
+export async function createMember (memberToken: string, user: Instance, role: Role): Promise<Instance> {
+    const res = await promisifedRequest({
+        url:'http://localhost:3000/members',
+        method: 'POST',
+        body: {user_id: user.id, role_id: role.id },
+        json: true,
+        headers: {'x-access-token': memberToken}
+    })
+    expect(res.statusCode).to.equal(200)
+    expect(res.body).to.exist
+    return res.body
+}
+
+static getStatusCode () {
+        return BaseE
+    }
+
+
+export async function truncateAllModels (modelsFactory: ModelsFactory) {
+    await modelsFactory.userModel.truncate()
+    await modelsFactory.surveyModel.truncate()
+    await modelsFactory.memberModel.truncate()
+    await modelsFactory.organizationModel.truncate()
+    await modelsFactory.memberSurveyPermissionModel.truncate()
+    await modelsFactory.deletionJobModel.truncate()
+}

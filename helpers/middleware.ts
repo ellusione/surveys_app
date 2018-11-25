@@ -1,5 +1,6 @@
 
 import Express from 'express';
+import Sequelize from 'sequelize'
 import Validator from 'express-validator/check'
 import jwt from 'jsonwebtoken'
 import Bluebird from 'bluebird'
@@ -76,6 +77,9 @@ export function errorHandlingFn(
 
     if (error instanceof Errors.BaseError) {
         return res.status(error.statusCode).json(errorJson)
+    }
+    if (error instanceof Sequelize.UniqueConstraintError) {
+        return res.status(400).json(errorJson)
     }
     return res.status(500).json(errorJson)
 }

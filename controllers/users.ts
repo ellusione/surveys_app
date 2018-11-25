@@ -13,20 +13,33 @@ import { isNullOrUndefined } from 'util';
 export function initUsersController(app: Express.Express, modelsFactory: Factory) {
     const authMiddleware = makeAuthMiddleware(modelsFactory) //maybe move to injection to optimize objects count (to make shared)
 
+    function loadUser (req: Express.Request, res: Express.Response, next: Function) {
+        return (async (): Bluebird<void> => {
+            const userId = req.params.user_id
+            const user = await modelsFactory.userModel.findById(userId)
+
+            if (!user) {
+                throw new Errors.NotFoundError(ModelTypes.userName, userId)
+            }
+
+            res.locals.user = user
+        })().asCallback(next)
+    }
+
     function checkAuth (capability: Capability) {
         return (req: Express.Request, res: Express.Response, next: Function) => {
 
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'user': {
-                        if (req.auth.id !== req.params.user_id) {
+                        if (req.auth.id !== Number(req.params.user_id)) {
                             throw new Errors.UnauthorizedError()
                         }
                         return
                     }
 
                     case 'member': {
-                        if (req.auth.id !== req.params.user_id) {
+                        if (req.auth.id !== Number(req.params.user_id)) {
                             await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
                         }
                         return
@@ -79,6 +92,7 @@ export function initUsersController(app: Express.Express, modelsFactory: Factory
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
+        loadUser,
         Middleware.validationErrorHandlingFn
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

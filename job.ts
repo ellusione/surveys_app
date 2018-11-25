@@ -24,7 +24,7 @@ export function getDeletionRunnerFn(modelsFactory: Factory) {
                     $lte: 11
                 }
             },
-            order: [ [ 'createdAt', 'DESC' ]]
+            order: [ [ 'created_at', 'DESC' ]]
         })
 
         if (!job) {

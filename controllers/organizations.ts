@@ -69,7 +69,7 @@ export function initOrganizationsController(app: Express.Express, modelsFactory:
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
             const result = await modelsFactory.organizationModel.findAndCountAll({
-                offset: page * limit,
+                offset: Middleware.calculatePaginationOffset(page, limit),
                 limit
             })
 

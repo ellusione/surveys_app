@@ -53,9 +53,9 @@ describe('Survey test', () => {
         it('Survey created with proper req body', async () => {
             const survey = await makeSurvey('a')
 
-            expect(survey.createdAt).to.exist
-            expect(survey.updatedAt).to.exist
-            expect(survey.deletedAt).to.not.exist
+            expect(survey.created_at).to.exist
+            expect(survey.updated_at).to.exist
+            expect(survey.deleted_at).to.not.exist
             expect(survey.id).to.be.an('number')
             expect(survey.name).to.equal('a')
         })

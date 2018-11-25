@@ -34,6 +34,8 @@ describe('Token test', () => {
 
     beforeEach(async () => {
         await modelsFactory.userModel.truncate()
+        await modelsFactory.organizationModel.truncate()
+        await modelsFactory.memberModel.truncate()
     })
 
     beforeEach(async () => {
@@ -41,6 +43,18 @@ describe('Token test', () => {
     })
 
     describe('Create user token', () => {
+
+        it('Token request success', async () => {
+            const res = await promisifedRequest({
+                url:'http://localhost:3000/user_tokens',
+                method: 'POST',
+                body: {username, password},
+                json: true
+            })
+
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.be.an('string')
+        })
 
         it('Token request fails with wrong password', async () => {
             const res = await promisifedRequest({
@@ -68,18 +82,6 @@ describe('Token test', () => {
             expect(res.body).to.exist
             expect(res.body.errors).to.be.an('array')
             expect(res.body.errors.length).to.equal(1)
-        })
-
-        it('Token request success', async () => {
-            const res = await promisifedRequest({
-                url:'http://localhost:3000/user_tokens',
-                method: 'POST',
-                body: {username, password},
-                json: true
-            })
-
-            expect(res.statusCode).to.equal(200)
-            expect(res.body).to.be.an('string')
         })
     })
 
@@ -116,6 +118,19 @@ describe('Token test', () => {
             organizationId = res.body.id
         })
 
+        it('Token request success', async () => {
+            const res = await promisifedRequest({
+                url:'http://localhost:3000/member_tokens',
+                method: 'POST',
+                body: {organization_id: organizationId},
+                json: true,
+                headers: {'x-access-token': userToken}
+            })
+
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.be.an('string')
+        })
+
         it('Token request fails with the wrong token', async () => {
             const fakeId = organizationId+Math.round(10*Math.random())
             const res = await promisifedRequest({
@@ -146,19 +161,6 @@ describe('Token test', () => {
             expect(res.body).to.exist
             expect(res.body.errors).to.be.an('array')
             expect(res.body.errors.length).to.equal(1)
-        })
-
-        it('Token request success', async () => {
-            const res = await promisifedRequest({
-                url:'http://localhost:3000/member_tokens',
-                method: 'POST',
-                body: {organization_id: organizationId},
-                json: true,
-                headers: {'x-access-token': userToken}
-            })
-
-            expect(res.statusCode).to.equal(200)
-            expect(res.body).to.be.an('string')
         })
     })
 })

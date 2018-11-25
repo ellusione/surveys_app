@@ -1,8 +1,8 @@
-
 export abstract class BaseError extends Error {
     abstract name: string
-    abstract statusCode: number
+    abstract statusCode: number //make static
 
+    static getStatusCode (): void{}
     constructor(message: string) {
         super(message)
         Object.setPrototypeOf(this, BaseError.prototype);
@@ -12,6 +12,7 @@ export abstract class BaseError extends Error {
 export class BadRequestError extends BaseError {
     name = 'BadRequestError'
     statusCode = 400 
+
     constructor (message: string) {
         super(message)
         Object.setPrototypeOf(this, BadRequestError.prototype);
