@@ -14,10 +14,8 @@ type MemberAuth = {
 }
 type Auth = NoneAuth | UserAuth | MemberAuth
 
-//declare global {
 declare namespace Express {
     export interface Request {
         auth: Auth
     }
  }
-//}

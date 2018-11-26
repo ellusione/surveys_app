@@ -7,7 +7,7 @@ import ResourcesMiddleware from '../middleware/resources';
 import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
-import {Capability, adminRole} from '../roles'
+import {Capability, managerRole} from '../roles'
 import * as Errors from '../errors'
 
 export function initOrganizationsController(
@@ -53,7 +53,7 @@ export function initOrganizationsController(
             await modelsFactory.memberModel.create({
                 user_id: req.auth.id,
                 organization_id: <number> result.id,
-                role_id: adminRole.id
+                role_id: managerRole.id
             })
 
             return res.json(result)
@@ -68,7 +68,7 @@ export function initOrganizationsController(
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
+            const page = isNullOrUndefined(req.query.page) ? 1 : req.query.page
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
@@ -83,7 +83,7 @@ export function initOrganizationsController(
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        resourcesMiddleware.loadOrganization,
+        resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -93,7 +93,7 @@ export function initOrganizationsController(
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        resourcesMiddleware.loadOrganization,
+        resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
         checkMemberAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],

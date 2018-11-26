@@ -1,6 +1,7 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
+import { isNullOrUndefined } from 'util';
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
 import ResourcesMiddleware from '../middleware/resources';
@@ -40,7 +41,7 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadSurvey,
+        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
         checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
@@ -77,20 +78,33 @@ export function initMemberSurveyPermissionController(
     
     app.get('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
-        Validator.body('user_id').isInt({gt: 0}),
+        Validator.query('page').optional().isInt({gt: -1}), 
+        Validator.query('size').optional().isInt({lt: 101, gt: 0}),
+        Validator.query('user_id').optional().isInt({gt: 0}),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
+
+            const surveyId = req.params.survey_id
+            const userId = req.query.user_id
+
+            const whereCondition = userId ? {survey_id: surveyId, user_id: userId} : {survey_id: surveyId}
+
+            const page = isNullOrUndefined(req.query.page) ? 1 : req.query.page
+
+            const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
+
+            const offset = Middleware.calculatePaginationOffset(page, limit)
+
             const result = await modelsFactory.memberSurveyPermissionModel.findAll({
-                where: {
-                    survey_id: req.params.survey_id,
-                    user_id: req.body.user_id
-                }
+                where: whereCondition,
+                offset,
+                limit
             })
 
-            return res.json(result) 
+            return res.json(result)  //but should be single response for 1 user! what to do.
         })().asCallback(next)
     })
 
@@ -98,7 +112,7 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadSurvey,
+        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
         checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],

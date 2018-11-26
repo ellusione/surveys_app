@@ -13,6 +13,8 @@ export function validationErrorHandlingFn (
 ) {
     const errors = Validator.validationResult(req)
     if (!errors.isEmpty()) {
+
+        console.error(`Validation errors on ${req.method} request to ${req.url}`, {errors: errors.array()})
         return res.status(400).json({ errors: errors.array() });
     }
 
@@ -22,6 +24,8 @@ export function validationErrorHandlingFn (
 export function errorHandlingFn(
     error: Error, req: Express.Request, res: Express.Response, next: Function
 ) {
+    console.error(`Error on ${req.method} request to ${req.url}`, error)
+
     const errorJson = {errors: [error]}
 
     if (error instanceof Errors.BaseError) {
@@ -30,5 +34,6 @@ export function errorHandlingFn(
     if (error instanceof Sequelize.UniqueConstraintError) {
         return res.status(400).json(errorJson)
     }
+
     return res.status(500).json(errorJson)
 }

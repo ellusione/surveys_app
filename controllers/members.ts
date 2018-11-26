@@ -10,8 +10,6 @@ import { isNullOrUndefined } from 'util';
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
 
-type PaginationResult = {rows: ModelTypes.MemberInstance[], count: number}
-
 export function initMembersController(
     app: Express.Express, 
     modelsFactory: Factory, 
@@ -53,15 +51,9 @@ export function initMembersController(
                 throw new Errors.NotFoundError(ModelTypes.userName, userId)
             }
 
-            const organization = await modelsFactory.organizationModel.findById(organizationId)
-
-            if (!organization) {
-                throw new Errors.NotFoundError('Organization not found')
-            }
-
             const result = await modelsFactory.memberModel.create({
                 user_id: req.body.user_id, 
-                organization_id: req.body.organization_id,
+                organization_id: organizationId,
                 role_id: req.body.role_id
             })
 
@@ -89,7 +81,7 @@ export function initMembersController(
 
             const whereCondition = userId ? {user_id: userId} : (organizationId ? {organization_id: organizationId} : null)
 
-            const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page
+            const page = isNullOrUndefined(req.query.page) ? 1 : req.query.page
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
@@ -111,7 +103,7 @@ export function initMembersController(
 
     app.get('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        resourcesMiddleware.loadMember,
+        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -121,7 +113,7 @@ export function initMembersController(
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadMember,
+        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
         checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
@@ -142,7 +134,7 @@ export function initMembersController(
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        resourcesMiddleware.loadMember,
+        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
         checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],

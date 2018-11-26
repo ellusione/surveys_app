@@ -22,7 +22,7 @@ export function initSurveysController(
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = authMiddleware.getAndCheckMemberAuth(req.auth, capability)
+                        res.locals.auth_member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
                         return
                     }
 
@@ -38,7 +38,7 @@ export function initSurveysController(
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        res.locals.auth_member = authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey.id, capability)
+                        res.locals.auth_member = await authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey, capability)
                         return
                     }
 
@@ -71,6 +71,8 @@ export function initSurveysController(
     app.get('/surveys', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
+        Validator.query('organization_id').optional().isInt({gt: 0}),
+        Validator.query('creator_id').optional().isInt({gt: 0}),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -86,7 +88,7 @@ export function initSurveysController(
 
             const whereCondition = creatorId ? {creator_id: creatorId} : (organizationId ? {organization_id: organizationId} : null)
 
-            const page = isNullOrUndefined(req.query.page) ? 0 : req.query.page //have default pagination settings in config
+            const page = isNullOrUndefined(req.query.page) ? 1 : req.query.page //have default pagination settings in config
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
@@ -108,7 +110,7 @@ export function initSurveysController(
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        resourcesMiddleware.loadSurvey,
+        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -118,7 +120,7 @@ export function initSurveysController(
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        resourcesMiddleware.loadSurvey,
+        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
         checkSurveyAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
@@ -139,7 +141,7 @@ export function initSurveysController(
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        resourcesMiddleware.loadSurvey,
+        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
         checkSurveyAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],

@@ -2,6 +2,7 @@
 import Bluebird from 'bluebird'
 import Express from 'express'
 import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Errors from '../errors'
 import {Role, Capability} from '../roles'
 import jwt from 'jsonwebtoken'
@@ -22,7 +23,7 @@ export default class AuthMiddleware {
         })
 
         if (!member) {
-            throw new Errors.NotFoundError('member')
+            throw new Errors.UnauthorizedError()
         }
 
         return member
@@ -86,15 +87,21 @@ export default class AuthMiddleware {
         return member
     }
 
-    async getAndCheckMemberSurveyAuth (auth: MemberAuth, surveyId: number, capability: Capability) {
+    async getAndCheckMemberSurveyAuth (auth: MemberAuth, survey: ModelTypes.SurveyInstance, capability: Capability) {
         const member = await this.getMemberAuth(auth)
+
+        if (member.organization_id !== survey.organization_id) {
+            throw new Errors.ForbiddenError(
+                'Member not authorized to alter survey'
+            )
+        }
 
         if (!Role.findByRoleId(member.role_id).capabilities.has(capability)) {
 
             const permission = await this.modelsFactory.memberSurveyPermissionModel.findOne({
                 where: {
                     user_id: member.user_id,
-                    survey_id: surveyId
+                    survey_id: survey.id
                 }
             })
 

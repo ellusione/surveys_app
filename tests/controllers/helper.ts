@@ -88,9 +88,9 @@ export async function createSurvey (name: string, memberToken: string) {
 
 export async function createMember (userId: number, role: Role, memberToken: string) {
     const res = await promisifedRequest({
-        url:'http://localhost:3000/surveys',
+        url:'http://localhost:3000/members',
         method: 'POST',
-        body: {user_id: userId, role: role.id },
+        body: {user_id: userId, role_id: role.id },
         json: true,
         headers: {'x-access-token': memberToken}
     })

@@ -83,7 +83,7 @@ export function initUsersController(
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        resourcesMiddleware.loadUser,
+        resourcesMiddleware.loadUser.bind(resourcesMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -93,7 +93,7 @@ export function initUsersController(
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        resourcesMiddleware.loadUser,
+        resourcesMiddleware.loadUser.bind(resourcesMiddleware),
         checkAuth(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
@@ -114,7 +114,7 @@ export function initUsersController(
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        resourcesMiddleware.loadUser,
+        resourcesMiddleware.loadUser.bind(resourcesMiddleware),
         checkAuth(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],
