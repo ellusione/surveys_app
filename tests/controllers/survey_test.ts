@@ -5,24 +5,43 @@ import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
 import Factory from '../../models/factory'
+import * as Helper from './helper'
+import {memberRole, Role} from '../../roles'
 
 const expect = chai.expect
 
 describe('Survey test', () => {
-    type Survey = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
+    const username = 'bq23'
+    const password = 'cddsw'  
     let modelsFactory: Factory
-    
-    async function makeSurvey (name: string) {
-        const res = await promisifedRequest({
-            url:'http://localhost:3000/surveys',
-            method: 'POST',
-            body: {name},
-            json: true
-        })
-        expect(res.statusCode).to.equal(200)
-        expect(res.body).to.exist
-        return res.body
+    let memberToken: string
+
+    async function createPrivelegedMember (username: string, password: string) {
+        const user = await Helper.createUser('a', username, password)
+        const userToken = await Helper.createUserToken(username, password)
+        const organization = await Helper.createOrganization(userToken)
+        const memberToken = Helper.createMemberToken(organization.id, userToken)
+        
+        return {
+            user,
+            memberToken,
+            organization
+        }
+    }
+
+    async function createUnprivilegedMemberToken (username: string, password: string, authMemberToken: string) {
+        const unprivilegedUser = await Helper.createUser('b', username, password)
+        const userToken = await Helper.createUserToken(username, password)
+
+        const member = await Helper.createMember(unprivilegedUser.id, memberRole, authMemberToken)
+
+        const memberToken = Helper.createMemberToken(member.organization_id, userToken)
+
+        return {
+            memberToken,
+            organization
+        }
     }
 
     before('Init db and server with routes', async () => {
@@ -31,27 +50,23 @@ describe('Survey test', () => {
     })
 
     beforeEach(async () => {
+        await modelsFactory.userModel.truncate()
         await modelsFactory.surveyModel.truncate()
     })
 
-    describe('Create survey', () => {
-        it('Survey creation errors with insufficient req body', async () => {
-            const res = await promisifedRequest({
-                url:'http://localhost:3000/surveys',
-                method: 'POST',
-                body: {'name_false': 'a'},
-                json: true
-            })
+    beforeEach('create privileged member', async () => {
+        memberToken = await createMemberToken(username, password)
+    })
 
-            expect(res.statusCode).to.equal(400)
-            
-            expect(res.body).to.exist
-            expect(res.body.errors).to.be.an('array')
-            expect(res.body.errors.length).to.equal(1)
+    describe('Create survey', () => {
+        let unprivilegedMemberToken: string
+    
+        beforeEach('create unprivileged member', async () => {
+            unprivilegedMemberToken = await createUnprivilegedMemberToken(username+'a', password, memberToken)
         })
 
         it('Survey created with proper req body', async () => {
-            const survey = await makeSurvey('a')
+            const survey = await Helper.createSurvey('b', memberToken)
 
             expect(survey.created_at).to.exist
             expect(survey.updated_at).to.exist
@@ -59,13 +74,30 @@ describe('Survey test', () => {
             expect(survey.id).to.be.an('number')
             expect(survey.name).to.equal('a')
         })
+
+        it('Survey creation errors with insufficient req body', async () => {
+            const res = await promisifedRequest({
+                url:'http://localhost:3000/surveys',
+                method: 'POST',
+                body: {'name_false': 'a'},
+                json: true,
+                headers: {'x-access-token': memberToken}
+            })
+
+            expect(res.statusCode).to.equal(400)
+        })
+
+        it('Survey creation errors for unprivileged member', async () => {
+            const res = await Helper.createSurvey('b', unprivilegedMemberToken)
+            expect(res.statusCode).to.equal(401)
+        })
     })
 
     describe('Find survey', () => {
-        let survey: Survey
+        let survey: Helper.Instance
 
         beforeEach(async () => {
-            survey = await makeSurvey('a')
+            survey = await Helper.createSurvey('a', memberToken)
         })
 
         it('Successfully find the survey', async () => {
@@ -91,13 +123,19 @@ describe('Survey test', () => {
     })
 
     describe('Find surveys', () => {
-        let surveys: Survey[]
+        let surveys: Helper.Instance[]
+
+        let otherMemberToken: string
+
+        beforeEach('create member of other org', async () => {
+            otherMemberToken = await createMemberToken(username+'c', password)
+        })
 
         beforeEach(async () => {
             surveys = []
-            surveys.push(await makeSurvey('a'))
-            surveys.push(await makeSurvey('b'))
-            surveys.push(await makeSurvey('c'))
+            surveys.push(await Helper.createSurvey('a', memberToken))
+            surveys.push(await Helper.createSurvey('b', otherMemberToken))
+            surveys.push(await Helper.createSurvey('c', memberToken))
         })
 
         it('Successfully find the surveys', async () => {
@@ -136,22 +174,32 @@ describe('Survey test', () => {
             expect(res.body.rows).to.be.empty
         })
 
+        it('Successfully find surveys for one org', async () => {
+            const res = await promisifedRequest({
+                url:`http://localhost:3000/surveys?organization_id=${}`,
+                json: true
+            })
+            expect(res.statusCode).to.equal(200)
+            expect(res.body).to.exist
+            expect(res.body.count).to.equal(3)
+            expect(res.body.rows).to.be.an('array')
+            expect(res.body.rows).to.be.empty
+        })
+
         it('Error on finding surveys with incorrect pagination query', async () => {
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys?page=a`,
                 json: true
             })
             expect(res.statusCode).to.equal(400)
-            expect(res.body.errors).to.be.an('array')
-            expect(res.body.errors.length).to.equal(1)
         })
     })
 
     describe('Patch survey', () => {
-        let survey: Survey
+        let survey: Helper.Instance
 
         beforeEach(async () => {
-            survey = await makeSurvey('a')
+            survey = await Helper.makeSurvey('a')
         })
 
         it('Successfully update the survey name', async () => {
@@ -203,10 +251,10 @@ describe('Survey test', () => {
     })
 
     describe('Delete survey', () => {
-        let survey: Survey
+        let survey: Helper.Instance
 
         beforeEach(async () => {
-            survey = await makeSurvey('a')
+            survey = await Helper.makeSurvey('a')
         })
 
         it('Successfully delete the survey', async () => {

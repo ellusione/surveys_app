@@ -80,7 +80,7 @@ export default class AuthMiddleware {
         const member = await this.getMemberAuth(auth)
 
         if (!Role.findByRoleId(member.role_id).capabilities.has(capability)) {
-            throw new Errors.ForbiddenError('member cannot edit user')
+            throw new Errors.ForbiddenError('member cannot alter user')
         }
 
         return member
@@ -98,9 +98,9 @@ export default class AuthMiddleware {
                 }
             })
 
-            if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(Capability.Edit)) {
+            if (!permission || !Role.findByRoleId(permission.role_id).capabilities.get(capability)) {
                 throw new Errors.ForbiddenError(
-                    'Member not authorized to edit survey'
+                    'Member not authorized to alter survey'
                 )
             }
         }

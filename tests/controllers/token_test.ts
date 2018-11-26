@@ -28,7 +28,7 @@ describe('Token test', () => {
     })
 
     beforeEach(async () => {
-        await Helper.makeUser('a', username, password)
+        await Helper.createUser('a', username, password)
     })
 
     describe('Create user token', () => {

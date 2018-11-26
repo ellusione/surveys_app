@@ -10,7 +10,6 @@ import * as Helper from './helper'
 const expect = chai.expect
 
 describe('User test', () => {
-    type User = {id: number} //imperfect
     const promisifedRequest = bluebird.Promise.promisify(request)
     const username = 'bq23'
     const password = 'cddsw'  
@@ -42,7 +41,7 @@ describe('User test', () => {
         })
 
         it('User created with proper req body', async () => {
-            const user = await Helper.makeUser('a', username, password)
+            const user = await Helper.createUser('a', username, password)
 
             expect(user.created_at).to.exist
             expect(user.updated_at).to.exist
@@ -53,13 +52,10 @@ describe('User test', () => {
     })
 
     describe('Find user', () => {
-        let user: User
+        let user: Helper.Instance
 
         beforeEach(async () => {
-            const res =await modelsFactory.userModel.findAll()
-            console.log('found')
-            console.log(res)
-            user = await Helper.makeUser('a', username, password)
+            user = await Helper.createUser('a', username, password)
         })
 
         it('Successfully find the user', async () => {
@@ -85,13 +81,13 @@ describe('User test', () => {
     })
 
     describe('Find users', () => {
-        let users: User[]
+        let users: Helper.Instance[]
 
         beforeEach(async () => {
             users = []
-            users.push(await Helper.makeUser('a', username, password))
-            users.push(await Helper.makeUser('b', username+'b', password))
-            users.push(await Helper.makeUser('c', username+'c', password))
+            users.push(await Helper.createUser('a', username, password))
+            users.push(await Helper.createUser('b', username+'b', password))
+            users.push(await Helper.createUser('c', username+'c', password))
         })
 
         it('Successfully find the users', async () => {
@@ -142,19 +138,19 @@ describe('User test', () => {
     })
 
     describe('Patch user', () => {
-        let user: User
+        let user: Helper.Instance
         let userToken: string
 
         beforeEach(async () => {
-            user = await Helper.makeUser('a', username, password)
+            user = await Helper.createUser('a', username, password)
         })
 
         beforeEach(async () => {
-            userToken = await Helper.makeUserToken(username, password)
+            userToken = await Helper.createUserToken(username, password)
         })
 
         it('Successfully update the user name', async () => {
-            const userToken = await Helper.makeUserToken(username, password)
+            const userToken = await Helper.createUserToken(username, password)
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,
                 method: 'PATCH',
@@ -186,8 +182,8 @@ describe('User test', () => {
         })
 
         it('Error when the token belongs to the wrong user', async () => {
-            await Helper.makeUser('c', username+'c', password)
-            const otherUserToken = await Helper.makeUserToken(username+'c', password)
+            await Helper.createUser('c', username+'c', password)
+            const otherUserToken = await Helper.createUserToken(username+'c', password)
 
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,
@@ -227,15 +223,15 @@ describe('User test', () => {
     })
 
     describe('Delete user', () => {
-        let user: User
+        let user: Helper.Instance
         let userToken: string
 
         beforeEach(async () => {
-            user = await Helper.makeUser('a', username, password)
+            user = await Helper.createUser('a', username, password)
         })
 
         beforeEach(async () => {
-            userToken = await Helper.makeUserToken(username, password)
+            userToken = await Helper.createUserToken(username, password)
         })
 
         it('Successfully delete the user', async () => {
@@ -262,8 +258,8 @@ describe('User test', () => {
         })
 
         it('Error when the token belongs to the wrong user', async () => {
-            await Helper.makeUser('c', username+'c', password)
-            const otherUserToken = await Helper.makeUserToken(username+'c', password)
+            await Helper.createUser('c', username+'c', password)
+            const otherUserToken = await Helper.createUserToken(username+'c', password)
 
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${user.id}`,

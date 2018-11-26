@@ -269,3 +269,29 @@ export async function truncateAllModels (modelsFactory: ModelsFactory) {
     await modelsFactory.memberSurveyPermissionModel.truncate()
     await modelsFactory.deletionJobModel.truncate()
 }
+
+  makeFn (fn: (req: Express.Request, res: Express.Response) => Bluebird<void>) {
+        return (req: Express.Request, res: Express.Response, next: Function) => {
+            return fn(req, res).asCallback(next)
+        }
+    }
+
+    loadUser = this.makeFn(async (req, res): Bluebird<void> => {
+            const userId = req.params.user_id
+            const user = await this.modelsFactory.userModel.findById(userId)
+
+            if (!user) {
+                throw new Errors.NotFoundError(ModelTypes.userName, userId)
+            }
+
+            res.locals.user = user
+        })
+
+
+    beforeEach('create member of different organization', async () => {
+        otherUser = await Helper.createUser('c', username+'c', password)
+        const userToken = await Helper.createUserToken(username+'c', password)
+        const organization = await Helper.createOrganization(userToken)
+        
+        otherMemberToken = await Helper.createMemberToken(organization.id, userToken)
+    })

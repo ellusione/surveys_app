@@ -79,8 +79,6 @@ export function initMembersController(
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            let result: PaginationResult
-
             const userId = req.query.user_id
 
             const organizationId = req.query.organization_id
@@ -97,7 +95,7 @@ export function initMembersController(
 
             const offset = Middleware.calculatePaginationOffset(page, limit)
 
-            result = await modelsFactory.memberModel.findAndCountAll(
+            const result = await modelsFactory.memberModel.findAndCountAll(
                 whereCondition ? {
                     where: whereCondition,
                     offset,

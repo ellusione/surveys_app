@@ -2,13 +2,14 @@ import * as chai from 'chai'
 chai.use(require('chai-as-promised'))
 import request from 'request'
 import bluebird from 'bluebird'
+import {Role} from '../../roles'
 
 const expect = chai.expect
 const promisifedRequest = bluebird.Promise.promisify(request)
 
-type Instance = {id: number}
+export type Instance = {id: number}
 
-export async function makeUser (name: string, username: string, password: string) {
+export async function createUser (name: string, username: string, password: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/users',
         method: 'POST',
@@ -20,7 +21,7 @@ export async function makeUser (name: string, username: string, password: string
     return res.body
 }
 
-export async function patchUser (name: string): Promise<Instance> {
+export async function patchUser (name: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/users',
         method: 'PATCH',
@@ -32,7 +33,7 @@ export async function patchUser (name: string): Promise<Instance> {
     return res.body
 }
 
-export async function makeUserToken(username: string, password: string): Promise<string> {
+export async function createUserToken(username: string, password: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/user_tokens',
         method: 'POST',
@@ -45,7 +46,7 @@ export async function makeUserToken(username: string, password: string): Promise
     return res.body
 }
 
-export async function createOrganization (userToken: string): Promise<Instance> {
+export async function createOrganization (userToken: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/organizations',
         method: 'POST',
@@ -58,16 +59,42 @@ export async function createOrganization (userToken: string): Promise<Instance> 
     return res.body
 }
 
-export async function createMemberToken (organization: Instance, userToken: string): Promise<string> {
+export async function createMemberToken (organizationId: number, userToken: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/member_tokens',
         method: 'POST',
-        body: {organization_id: organization.id},
+        body: {organization_id: organizationId},
         json: true,
         headers: {'x-access-token': userToken}
     })
 
     expect(res.statusCode).to.equal(200)
     expect(res.body).to.be.an('string')
+    return res.body
+}
+
+export async function createSurvey (name: string, memberToken: string) {
+    const res = await promisifedRequest({
+        url:'http://localhost:3000/surveys',
+        method: 'POST',
+        body: {name},
+        json: true,
+        headers: {'x-access-token': memberToken}
+    })
+    expect(res.statusCode).to.equal(200)
+    expect(res.body).to.exist
+    return res.body
+}
+
+export async function createMember (userId: number, role: Role, memberToken: string) {
+    const res = await promisifedRequest({
+        url:'http://localhost:3000/surveys',
+        method: 'POST',
+        body: {user_id: userId, role: role.id },
+        json: true,
+        headers: {'x-access-token': memberToken}
+    })
+    expect(res.statusCode).to.equal(200)
+    expect(res.body).to.exist
     return res.body
 }
