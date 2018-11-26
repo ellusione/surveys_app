@@ -6,6 +6,7 @@ import {init} from '../../index'
 import {initDB} from '../../database'
 import Factory from '../../models/factory'
 import uuid = require('uuid');
+import * as Helper from './helper'
 
 const expect = chai.expect
 
@@ -14,18 +15,6 @@ describe('Token test', () => {
     const username = 'b'
     const password = 'c'    
     let modelsFactory: Factory
-    
-    async function makeUser (name: string, username: string, password: string) {
-        const res = await promisifedRequest({
-            url:'http://localhost:3000/users',
-            method: 'POST',
-            body: {name, username, password},
-            json: true
-        })
-        expect(res.statusCode).to.equal(200)
-        expect(res.body).to.exist
-        return res.body
-    }
 
     before('Init db and server with routes', async () => {
         modelsFactory = await initDB()
@@ -39,7 +28,7 @@ describe('Token test', () => {
     })
 
     beforeEach(async () => {
-        await makeUser('a', username, password)
+        await Helper.makeUser('a', username, password)
     })
 
     describe('Create user token', () => {
@@ -90,10 +79,6 @@ describe('Token test', () => {
         let organizationId: number
 
         beforeEach(async () => {
-            await makeUser('a', username, password)
-        })
-
-        beforeEach(async () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/user_tokens',
                 method: 'POST',
@@ -118,7 +103,7 @@ describe('Token test', () => {
             organizationId = res.body.id
         })
 
-        it('Token request success', async () => {
+        it('Token request succeeds', async () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/member_tokens',
                 method: 'POST',
