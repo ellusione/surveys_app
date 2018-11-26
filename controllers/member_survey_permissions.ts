@@ -22,12 +22,7 @@ export function initMemberSurveyPermissionController(
             return (async (): Bluebird<void> => {
                 switch (req.auth.type) {
                     case 'member': {
-                        const member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
-
-                        if (member.organization_id !== res.locals.survey.organization_id) {
-                            throw new Errors.UnauthorizedError()
-                        }
-                        res.locals.auth_member = member
+                        res.locals.auth_member = await authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey, capability)
                         return
                     }
 
