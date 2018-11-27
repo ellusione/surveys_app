@@ -57,7 +57,9 @@ export function initUsersController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.Resource.getUser(req))
+        return (async (): Bluebird<Express.Response> => {
+            return res.json(Middleware.Resource.getUser(req)) 
+        })().asCallback(next)
     })
 
     app.patch('/users/:user_id', [

@@ -14,7 +14,7 @@ export function initOrganizationsController(
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        middleware.authSetter.setAuthUser.bind(middleware.authSetter),
+        middleware.authSetter.setAuthUser.bind(middleware.authSetter), //todo: only certain kinds of users can make organizations
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -61,7 +61,9 @@ export function initOrganizationsController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.Resource.getOrganization(req))
+        return (async (): Bluebird<Express.Response> => {
+            return res.json(Middleware.Resource.getOrganization(req))
+        })().asCallback(next)
     })
 
     app.patch('/organizations/:organization_id', [
@@ -93,7 +95,7 @@ export function initOrganizationsController(
         middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
         middleware.authSetter.setAuthMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfOrganization,
-        middleware.authCapability.verifyMember(Capability.Delete),
+        middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

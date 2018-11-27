@@ -90,7 +90,9 @@ export function initMembersController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.Resource.getMember(req))
+        return (async (): Bluebird<Express.Response> => {
+            return res.json(Middleware.Resource.getMember(req))
+        })().asCallback(next)
     })
 
     app.patch('/members/:member_id', [

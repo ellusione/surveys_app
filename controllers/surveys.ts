@@ -80,7 +80,9 @@ export function initSurveysController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.Resource.getSurvey(req)) 
+        return (async (): Bluebird<Express.Response> => {
+            return res.json(Middleware.Resource.getSurvey(req)) 
+        })().asCallback(next)
     })
 
     app.patch('/surveys/:survey_id', [
