@@ -3,9 +3,7 @@ import Http from 'http';
 import {initRoutes} from './controllers'
 import {initDB} from './database'
 import Factory from './models/factory'
-import ResourcesMiddleware from './middleware/resource/get'
-import AuthMiddleware from './middleware/auth/set'
-import * as Middleware from './middleware'
+import Middleware from './middleware/'
 
 const port = process.env.PORT || 3000
 
@@ -20,18 +18,17 @@ export async function init(modelsFactory: Factory) {
 
     console.log("Started server")
 
-    const loadResource = new ResourcesMiddleware(modelsFactory)
-    const authMiddleware = new AuthMiddleware(modelsFactory)
+    const middleware = new Middleware(modelsFactory)
 
     app.use(Express.json())
 
-    app.use(Middleware.setRequiredProperties)
+    app.use(middleware.general.setRequiredProperties)
 
-    app.use(authMiddleware.parseAuthHeader)
+    app.use(middleware.setAuth.parseAuthHeader)
 
-    initRoutes(app, modelsFactory, loadResource, authMiddleware)
+    initRoutes(app, modelsFactory, middleware)
 
-    app.use(Middleware.errorHandlingFn)
+    app.use(middleware.general.errorHandlingFn)
 
     console.log("Done initialzing routes")
 }

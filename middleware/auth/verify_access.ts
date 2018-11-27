@@ -1,7 +1,7 @@
 import Express from 'express'
 import * as Errors from '../../errors'
-import * as GetAuth from './get'
-import * as GetResource from '../resource/get'
+import GetAuth from './get'
+import GetResource from '../resource/get'
 
 export default class VerifyAuthAccess {
 

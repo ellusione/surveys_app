@@ -4,7 +4,7 @@ import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import ResourcesMiddleware from '../middleware/resource/get';
 import AuthMiddleware from '../middleware/auth/set';
-import * as Middleware from '../middleware'
+import * as Middleware from '../middleware/general'
 import { isNullOrUndefined } from 'util';
 import {Capability, managerRole} from '../roles'
 

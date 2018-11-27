@@ -5,7 +5,7 @@ import { isNullOrUndefined } from 'util';
 import Factory from '../models/factory'
 import ResourcesMiddleware from '../middleware/resource/get';
 import AuthMiddleware from '../middleware/auth/set';
-import * as Middleware from '../middleware'
+import * as Middleware from '../middleware/general'
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
 

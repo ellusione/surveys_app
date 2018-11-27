@@ -4,12 +4,8 @@ import Express from 'express'
 import Factory from '../../models/factory'
 import * as Errors from '../../errors'
 import {Role, Capability} from '../../roles'
-import * as GetAuth from './get'
-import * as GetResource from '../resource/get'
-import jwt from 'jsonwebtoken'
-import * as config from '../../config'
-import * as Middleware from '..';
-
+import GetAuth from './get'
+import GetResource from '../resource/get'
 
 export default class VerifyAuthCapability {
     modelsFactory: Factory

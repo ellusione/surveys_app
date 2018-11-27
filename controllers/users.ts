@@ -7,7 +7,7 @@ import LoadResource from '../middleware/resource/load';
 import SetAuth from '../middleware/auth/set';
 import VerifyAuthAccess from '../middleware/auth/verify_access'
 import VerifyAuthCapability from '../middleware/auth/verify_capability';
-import * as Middleware from '../middleware'
+import * as Middleware from '../middleware/general'
 import { isNullOrUndefined } from 'util';
 
 export function initUsersController(

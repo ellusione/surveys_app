@@ -4,8 +4,7 @@ import * as ModelTypes from '../../models'
 import Bluebird from 'bluebird'
 import * as Errors from '../../errors'
 
-
-export default class Middleware {
+export default class LoadResource {
     modelsFactory: Factory
 
     constructor (modelsFactory: Factory) {

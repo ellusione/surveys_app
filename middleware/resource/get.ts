@@ -1,34 +1,36 @@
 import Express from 'express';
 import * as Errors from '../../errors'
 
-export function getUser (req: Express.Request) {
-    if (req.resource.type !== 'user') {
-        throw new Errors.UnexpectedError('unexpected resource type')
+export default class GetResource {
+    static getUser (req: Express.Request) {
+        if (req.resource.type !== 'user') {
+            throw new Errors.UnexpectedError('unexpected resource type')
+        }
+
+        return req.resource.instance
     }
 
-    return req.resource.instance
-}
+    static getSurvey (req: Express.Request) {
+        if (req.resource.type !== 'survey') {
+            throw new Errors.UnexpectedError('unexpected resource type')
+        }
 
-export function getSurvey (req: Express.Request) {
-    if (req.resource.type !== 'survey') {
-        throw new Errors.UnexpectedError('unexpected resource type')
+        return req.resource.instance
     }
 
-    return req.resource.instance
-}
+    static getOrganization (req: Express.Request) {
+        if (req.resource.type !== 'organization') {
+            throw new Errors.UnexpectedError('unexpected resource type')
+        }
 
-export function getOrganization (req: Express.Request) {
-    if (req.resource.type !== 'organization') {
-        throw new Errors.UnexpectedError('unexpected resource type')
+        return req.resource.instance
     }
 
-    return req.resource.instance
-}
+    static getMember (req: Express.Request) {
+        if (req.resource.type !== 'member') {
+            throw new Errors.UnexpectedError('unexpected resource type')
+        }
 
-export function getMember (req: Express.Request) {
-    if (req.resource.type !== 'member') {
-        throw new Errors.UnexpectedError('unexpected resource type')
+        return req.resource.instance
     }
-
-    return req.resource.instance
 }

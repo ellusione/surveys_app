@@ -6,7 +6,6 @@ import * as Errors from '../../errors'
 import jwt from 'jsonwebtoken'
 import * as config from '../../config'
 
-
 export default class LoadAuth {
     modelsFactory: Factory
     constructor (modelsFactory: Factory) {

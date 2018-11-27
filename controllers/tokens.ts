@@ -9,7 +9,7 @@ import LoadResource from '../middleware/resource/load';
 import SetAuth from '../middleware/auth/set';
 import VerifyAuthAccess from '../middleware/auth/verify_access'
 import VerifyAuthCapability from '../middleware/auth/verify_capability';
-import * as Middleware from '../middleware'
+import * as Middleware from '../middleware/general'
 import * as config from '../config'
 
 export function initTokensController(
