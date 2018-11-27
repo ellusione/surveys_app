@@ -69,7 +69,7 @@ describe('User test', () => {
         })
 
         it('Fail to find missing user', async () => {
-            const fakeUserId = user.id+Math.round(10*Math.random())
+            const fakeUserId = user.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${fakeUserId}`,
                 json: true
@@ -196,7 +196,7 @@ describe('User test', () => {
         })
 
         it('Error on updating missing user', async () => {
-            const fakeUserId = user.id+Math.round(10*Math.random())
+            const fakeUserId = user.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${fakeUserId}`,
                 method: 'PATCH',
@@ -270,7 +270,7 @@ describe('User test', () => {
         })
 
         it('Fail to delete missing user', async () => {
-            const fakeUserId = user.id+Math.round(10*Math.random())
+            const fakeUserId = user.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/users/${fakeUserId}`,
                 method: 'DELETE',

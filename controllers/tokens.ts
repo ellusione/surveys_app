@@ -5,10 +5,6 @@ import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
 import * as Errors from '../errors'
-import LoadResource from '../middleware/resource/load';
-import SetAuth from '../middleware/auth/set';
-import VerifyAuthAccess from '../middleware/auth/verify_access'
-import VerifyAuthCapability from '../middleware/auth/verify_capability';
 import * as Middleware from '../middleware';
 import * as config from '../config'
 

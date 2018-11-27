@@ -11,15 +11,15 @@ export {Base} from '../middleware/base'
 
 export class Middleware {
 
-    loadResource: LoadResource
+    LoadResource: LoadResource
 
-    setAuth: SetAuth
+    SetAuth: SetAuth
     VerifyAuthCapability: VerifyAuthCapability
     
     constructor (modelsFactory: Factory) {
-        this.loadResource = new LoadResource(modelsFactory)
+        this.LoadResource = new LoadResource(modelsFactory)
 
-        this.setAuth = new SetAuth(modelsFactory)
+        this.SetAuth = new SetAuth(modelsFactory)
         this.VerifyAuthCapability = new VerifyAuthCapability(modelsFactory)
     }
 }

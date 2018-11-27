@@ -304,7 +304,7 @@ export async function truncateAllModels (modelsFactory: ModelsFactory) {
             }
 
 
-// declare class LocalResources{}
+// declare class LocalResource{}
 declare interface TExpress extends Express.Express {
     Request: TRequest,
     Response: TResponse
@@ -315,10 +315,10 @@ declare interface TRequest extends Express.Request {
 }
 
 declare interface TResponse extends Express.Response{
-        customLocals: LocalResources<ModelTypes.BaseInstance>
+        customLocals: LocalResource<ModelTypes.BaseInstance>
 }
 
- LocalResources {
+ LocalResource {
         resource: ModelTypes.BaseInstance
         authMember: MemberAuth
         constructor (instance: ModelTypes.BaseInstance, authMember: MemberAuth) {
@@ -328,7 +328,7 @@ declare interface TResponse extends Express.Response{
     }
 
 
-class MemberSurveyPermissionsLocalResources implements LocalResources {
+class MemberSurveyPermissionsLocalResource implements LocalResource {
     resource: ModelTypes.MemberInstance
 
     constructor(resource: ModelTypes.MemberInstance) {

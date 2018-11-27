@@ -14,7 +14,7 @@ export function initOrganizationsController(
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        middleware.setAuth.setAuthUser.bind(middleware.setAuth),
+        middleware.SetAuth.setAuthUser.bind(middleware.SetAuth),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -57,7 +57,7 @@ export function initOrganizationsController(
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
+        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -67,9 +67,9 @@ export function initOrganizationsController(
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyMemberAccessOfOrganization.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
         middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
@@ -90,10 +90,10 @@ export function initOrganizationsController(
 
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyMemberAccessOfOrganization.bind(middleware.verifyAuthAccess),
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
+        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

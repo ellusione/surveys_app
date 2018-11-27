@@ -53,7 +53,7 @@ export function initUsersController(
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        middleware.loadResource.loadUser.bind(middleware.loadResource),
+        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -63,9 +63,9 @@ export function initUsersController(
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        middleware.loadResource.loadUser.bind(middleware.loadResource),
-        middleware.setAuth.setEitherAuth.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyEitherAuthAccessOfUser.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
+        middleware.SetAuth.setEitherAuth.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyEitherAuthAccessOfUser,
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -85,9 +85,9 @@ export function initUsersController(
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        middleware.loadResource.loadUser.bind(middleware.loadResource),
-        middleware.setAuth.setEitherAuth.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyEitherAuthAccessOfUser.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
+        middleware.SetAuth.setEitherAuth.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyEitherAuthAccessOfUser,
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

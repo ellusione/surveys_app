@@ -15,7 +15,7 @@ export function initSurveysController(
 
     app.post('/surveys', [
         Validator.body('name').isString(),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Create).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
@@ -76,7 +76,7 @@ export function initSurveysController(
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        middleware.loadResource.loadSurvey.bind(middleware.loadResource),
+        middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -86,9 +86,9 @@ export function initSurveysController(
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        middleware.loadResource.loadSurvey.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyMemberAccessOfSurvey.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
         middleware.VerifyAuthCapability.verifyAuthMemberSurveyCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
@@ -109,9 +109,9 @@ export function initSurveysController(
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        middleware.loadResource.loadSurvey.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyMemberAccessOfSurvey.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
         middleware.VerifyAuthCapability.verifyAuthMemberSurveyCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],

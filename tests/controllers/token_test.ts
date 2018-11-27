@@ -117,7 +117,7 @@ describe('Token test', () => {
         })
 
         it('Token request fails with the wrong token', async () => {
-            const fakeId = organizationId+Math.round(10*Math.random())
+            const fakeId = organizationId+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:'http://localhost:3000/member_tokens',
                 method: 'POST',
@@ -133,7 +133,7 @@ describe('Token test', () => {
         })
 
         it('Token request fails with fake organization_id', async () => {
-            const fakeId = organizationId+Math.round(10*Math.random())
+            const fakeId = organizationId+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:'http://localhost:3000/member_tokens',
                 method: 'POST',

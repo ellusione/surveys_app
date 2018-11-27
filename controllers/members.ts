@@ -17,7 +17,7 @@ export function initMembersController(
     app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Create).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
@@ -86,7 +86,7 @@ export function initMembersController(
 
     app.get('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        middleware.loadResource.loadMember.bind(middleware.loadResource),
+        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -96,9 +96,9 @@ export function initMembersController(
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.loadResource.loadMember.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyAccessOfMember.bind(middleware.verifyAuthAccess),
+        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyAccessOfMember,
         middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
@@ -119,9 +119,9 @@ export function initMembersController(
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        middleware.loadResource.loadMember.bind(middleware.loadResource),
-        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
-        middleware.verifyAuthAccess.verifyAccessOfMember.bind(middleware.verifyAuthAccess),,
+        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
+        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
+        Middleware.VerifyAuthAccess.verifyAccessOfMember,
         middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],

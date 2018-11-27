@@ -119,7 +119,7 @@ describe('Survey test', () => {
         })
 
         it('Fail to find missing survey', async () => {
-            const fakeSurveyId = survey.id+Math.round(10*Math.random())
+            const fakeSurveyId = survey.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${fakeSurveyId}`,
                 json: true
@@ -298,7 +298,7 @@ describe('Survey test', () => {
         })
 
         it('Error on updating missing survey', async () => {
-            const fakeSurveyId = survey.id+Math.round(10*Math.random())
+            const fakeSurveyId = survey.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${fakeSurveyId}`,
                 method: 'PATCH',
@@ -391,7 +391,7 @@ describe('Survey test', () => {
         })
 
         it('Fail to delete missing survey', async () => {
-            const fakeSurveyId = survey.id+Math.round(10*Math.random())
+            const fakeSurveyId = survey.id+Math.round(1000*Math.random())
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${fakeSurveyId}`,
                 method: 'DELETE',
