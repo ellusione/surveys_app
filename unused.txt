@@ -356,3 +356,10 @@ class MemberSurveyPermissionsLocalResource implements LocalResource {
             return next()
         }
     }
+
+
+export async function initAll () {
+    const modelsFactory = await initDB()
+    await init(modelsFactory)
+    return modelsFactory
+}

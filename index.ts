@@ -4,16 +4,23 @@ import {initRoutes} from './controllers'
 import {initDB} from './database'
 import Factory from './models/factory'
 import * as Middleware from './middleware/'
+import sequelize = require('sequelize');
 
 const port = process.env.PORT || 3000
 
+let models: Factory
+let app: Express.Express
+let server: Http.Server
+
 export async function init(modelsFactory: Factory) {
+
+    models = modelsFactory
 
     console.log("Done initializing database")
 
-    const app = Express();
+    app = Express();
 
-    const server = new Http.Server(app) 
+    server = new Http.Server(app) 
     server.listen(port)
 
     console.log("Started server")
@@ -31,6 +38,11 @@ export async function init(modelsFactory: Factory) {
     app.use(Middleware.Base.errorHandlingFn)
 
     console.log("Done initialzing routes")
+}
+
+export async function stop() {
+    server.close()
+    models.sequelize.close()
 }
 
 if (require.main === module) {
