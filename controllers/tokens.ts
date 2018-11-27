@@ -22,7 +22,7 @@ export function initTokensController(
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = await modelsFactory.userModel.findOne({
+            const user = await modelsFactory.userModel.scope('withCredentials').findOne({
                 where: {
                     username: req.body.username
                 }

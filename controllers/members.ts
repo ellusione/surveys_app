@@ -17,14 +17,14 @@ export function initMembersController(
     app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         middleware.authCapability.verifyMember(Capability.Create).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = Middleware.Auth.getAuthMember(req).organization_id
+            const organizationId = Middleware.Auth.getMember(req).organization_id
 
             const userId = req.body.user_id
 
@@ -90,16 +90,21 @@ export function initMembersController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return (async (): Bluebird<Express.Response> => {
-            return res.json(Middleware.Resource.getMember(req))
-        })().asCallback(next)
+
+        let member: ModelTypes.MemberInstance
+        try {
+            member = Middleware.Resource.getMember(req)
+        } catch (err) {
+            return next(err)
+        }
+        return res.json(member)
     })
 
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         middleware.resourceLoader.loadMember.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyAccessOfMember,
         middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
@@ -122,7 +127,7 @@ export function initMembersController(
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         middleware.resourceLoader.loadMember.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyAccessOfMember,
         middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  

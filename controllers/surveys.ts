@@ -2,6 +2,7 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../middleware';
 import { isNullOrUndefined } from 'util';
 import {Capability} from '../roles'
@@ -15,14 +16,14 @@ export function initSurveysController(
 
     app.post('/surveys', [
         Validator.body('name').isString(),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         middleware.authCapability.verifyMember(Capability.Create).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = Middleware.Auth.getAuthMember(req)
+            const member = Middleware.Auth.getMember(req)
 
             const result = await modelsFactory.surveyModel.create({
                 name: req.body.name, 
@@ -80,16 +81,21 @@ export function initSurveysController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return (async (): Bluebird<Express.Response> => {
-            return res.json(Middleware.Resource.getSurvey(req)) 
-        })().asCallback(next)
+        
+        let survey: ModelTypes.SurveyInstance
+        try {
+            survey = Middleware.Resource.getSurvey(req)
+        } catch (err) {
+            return next(err)
+        }
+        return res.json(survey)
     })
 
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfSurvey,
         middleware.authCapability.verifyMemberSurvey(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
@@ -112,7 +118,7 @@ export function initSurveysController(
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfSurvey,
         middleware.authCapability.verifyMemberSurvey(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  

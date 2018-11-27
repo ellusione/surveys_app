@@ -12,7 +12,6 @@ export {Base} from '../middleware/base'
 export class Middleware {
 
     resourceLoader: ResourceLoader
-
     authSetter: AuthSetter
     authCapability: AuthCapability
     

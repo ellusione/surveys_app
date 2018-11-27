@@ -21,6 +21,14 @@ export default (
     deletionJobModel: Sequelize.Model<DeletionJobDefinition.DeletionJobInstance, DeletionJobDefinition.DeletionJobAttributes>
 ) => {
     const options = lodash.merge({}, dbOptions, {
+        defaultScope: {
+            attributes: { exclude: ['password', 'username'] }
+        },
+        scopes: {
+            withCredentials: {
+                attributes: { include: ['password', 'username'] }
+            }
+        },
         hooks: {
             //change creator of survey also?
             afterDestroy: (user: Definition.UserInstance) => {

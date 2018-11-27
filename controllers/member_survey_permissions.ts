@@ -19,7 +19,7 @@ export function initMemberSurveyPermissionController(
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfSurvey,
         middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
@@ -92,7 +92,7 @@ export function initMemberSurveyPermissionController(
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfSurvey,
         middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  

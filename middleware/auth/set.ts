@@ -12,7 +12,7 @@ export default class AuthSetter {
         this.modelsFactory = modelsFactory
     }
 
-    parseAuthHeader (
+    parseHeader (
         req: Express.Request, res: Express.Response, next: Function
     ) {
         return (async (): Bluebird<void> => {
@@ -63,13 +63,13 @@ export default class AuthSetter {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         switch (req.auth.type) {
-            case 'user': return this.setAuthUser(req, res, next)
-            case 'member': return this.setAuthMember(req, res, next)
+            case 'user': return this.setUser(req, res, next)
+            case 'member': return this.setMember(req, res, next)
             default: throw new Errors.UnauthorizedError()
         }
     }
 
-    setAuthUser(
+    setUser(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         return (async (): Bluebird<void> => {
@@ -86,7 +86,7 @@ export default class AuthSetter {
         })().asCallback(next)
     }
 
-    setAuthMember(
+    setMember(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         return (async (): Bluebird<void> => {

@@ -30,7 +30,7 @@ export async function init(modelsFactory: Factory) {
 
     app.use(Middleware.Base.setRequiredProperties)
 
-    app.use(middleware.authSetter.parseAuthHeader)
+    app.use(middleware.authSetter.parseHeader)
 
     initRoutes(app, modelsFactory, middleware)
 

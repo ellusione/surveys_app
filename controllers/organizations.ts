@@ -2,6 +2,7 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../middleware';
 import { isNullOrUndefined } from 'util';
 import {Capability, managerRole} from '../roles'
@@ -14,13 +15,13 @@ export function initOrganizationsController(
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        middleware.authSetter.setAuthUser.bind(middleware.authSetter), //todo: only certain kinds of users can make organizations
+        middleware.authSetter.setUser.bind(middleware.authSetter), //todo: only certain kinds of users can make organizations
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.Auth.getAuthUser(req)
+            const user = Middleware.Auth.getUser(req)
 
             const result = await modelsFactory.organizationModel.create({name: req.body.name})
 
@@ -61,16 +62,21 @@ export function initOrganizationsController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return (async (): Bluebird<Express.Response> => {
-            return res.json(Middleware.Resource.getOrganization(req))
-        })().asCallback(next)
+        
+        let organization: ModelTypes.OrganizationInstance
+        try {
+            organization = Middleware.Resource.getOrganization(req)
+        } catch (err) {
+            return next(err)
+        }
+        return res.json(organization)
     })
 
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfOrganization,
         middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
@@ -93,7 +99,7 @@ export function initOrganizationsController(
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
-        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authSetter.setMember.bind(middleware.authSetter),
         Middleware.AuthAccess.verifyMemberAccessOfOrganization,
         middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  

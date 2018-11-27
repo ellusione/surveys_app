@@ -17,7 +17,7 @@ export default class AuthCapability {
         return (
             req: Express.Request, res: Express.Response, next: Function
         ) => {
-            if (!Role.findByRoleId(Auth.getAuthMember(req).role_id).capabilities.has(capability)) {
+            if (!Role.findByRoleId(Auth.getMember(req).role_id).capabilities.has(capability)) {
                 return next(new Errors.ForbiddenError())
             }
             return next()
@@ -29,7 +29,7 @@ export default class AuthCapability {
             req: Express.Request, res: Express.Response, next: Function
         ) => {
             return (async (): Bluebird<void> => {
-                const member = Auth.getAuthMember(req)
+                const member = Auth.getMember(req)
                 const survey = Resource.getSurvey(req)
 
                 if (!Role.findByRoleId(member.role_id).capabilities.has(capability)) {

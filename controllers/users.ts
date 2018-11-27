@@ -3,6 +3,7 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
+import * as ModelTypes from '../models'
 import * as Middleware from '../middleware';
 import { isNullOrUndefined } from 'util';
 
@@ -27,7 +28,7 @@ export function initUsersController(
                 password: bcrypt.hashSync(req.body.password, 8)
             })
 
-            return res.json(result)
+            return res.json(result) //todo: do not send password and username
         })().asCallback(next)
     })
 
@@ -57,9 +58,14 @@ export function initUsersController(
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return (async (): Bluebird<Express.Response> => {
-            return res.json(Middleware.Resource.getUser(req)) 
-        })().asCallback(next)
+
+        let user: ModelTypes.UserInstance
+        try {
+            user = Middleware.Resource.getUser(req)
+        } catch (err) {
+            return next(err)
+        }
+        return res.json(user)
     })
 
     app.patch('/users/:user_id', [

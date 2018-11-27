@@ -19,7 +19,7 @@ export class AuthAccess {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
-            const user = Auth.getAuthUser(req)
+            const user = Auth.getUser(req)
             const requestedUser = Resource.getUser(req)
 
             if (user.id !== requestedUser.id) {
@@ -35,7 +35,7 @@ export class AuthAccess {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
-            const member = Auth.getAuthMember(req)
+            const member = Auth.getMember(req)
             const requestedUser = Resource.getUser(req)
 
             if (member.user_id !== requestedUser.id) {
@@ -52,7 +52,7 @@ export class AuthAccess {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
-            const member = Auth.getAuthMember(req)
+            const member = Auth.getMember(req)
             const survey = Resource.getSurvey(req)
 
             if (member.organization_id !== survey.organization_id) {
@@ -68,7 +68,7 @@ export class AuthAccess {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
-            const member = Auth.getAuthMember(req)
+            const member = Auth.getMember(req)
             const requestedMember = Resource.getMember(req)
 
             if (member.organization_id !== requestedMember.organization_id) {
@@ -84,7 +84,7 @@ export class AuthAccess {
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
-            const member = Auth.getAuthMember(req)
+            const member = Auth.getMember(req)
             const organization = Resource.getOrganization(req)
 
             if (member.organization_id !== organization.id) {

@@ -2,7 +2,7 @@ import Express from 'express'
 import * as Errors from '../../errors'
 
 export class Auth {
-    static getAuthUser (req: Express.Request) {
+    static getUser (req: Express.Request) {
         if (req.auth.type !== 'user') {
             throw new Errors.UnexpectedError('unexpected auth type')
         }
@@ -12,7 +12,7 @@ export class Auth {
         return req.auth.instance
     }
 
-    static getAuthMember (req: Express.Request) {
+    static getMember (req: Express.Request) {
         if (req.auth.type !== 'member') {
             throw new Errors.UnexpectedError('unexpected auth type')
         }
