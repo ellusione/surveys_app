@@ -10,39 +10,37 @@ declare global {
     type UserAuth = {
         type: 'user'
         id: number,
-        user?: ModelTypes.UserInstance
+        instance?: ModelTypes.UserInstance
     }
 
     type MemberAuth = {
         type: 'member',
         id: number,
         organization_id: number,
-        member?: ModelTypes.MemberInstance
+        instance?: ModelTypes.MemberInstance
     }
     type Auth = NoneAuth | UserAuth | MemberAuth
 
-   type LocalResources = {
+   type Resource = {
        type: 'none'
    } | {
         type: 'organization'
-        resource: ModelTypes.OrganizationInstance
+        instance: ModelTypes.OrganizationInstance
     } | {
        type: 'member'
-       resource: ModelTypes.MemberInstance
+       instance: ModelTypes.MemberInstance
     } | {
         type: 'survey'
-        resource: ModelTypes.SurveyInstance
+        instance: ModelTypes.SurveyInstance
     } | {
         type: 'user'
-        resource: ModelTypes.UserInstance
+        instance: ModelTypes.UserInstance
     } 
 
     namespace Express {
         export interface Request {
-            auth: Auth
-        }
-        export interface Response {
-            customLocals: LocalResources
+            auth: Auth,
+            resource: Resource
         }
     }
 }

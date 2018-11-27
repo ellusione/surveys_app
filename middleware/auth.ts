@@ -2,7 +2,6 @@
 import Bluebird from 'bluebird'
 import Express from 'express'
 import Factory from '../models/factory'
-import * as ModelTypes from '../models'
 import * as Errors from '../errors'
 import {Role, Capability} from '../roles'
 import jwt from 'jsonwebtoken'
@@ -39,7 +38,7 @@ export default class AuthMiddleware {
                 throw new Errors.UnauthorizedError()
             }
 
-            req.auth.user = user
+            req.auth.instance = user
         })().asCallback(next)
     }
 
@@ -61,28 +60,28 @@ export default class AuthMiddleware {
                 throw new Errors.UnauthorizedError()
             }
 
-            req.auth.member = member
+            req.auth.instance = member
         })().asCallback(next)
     }
 
-    verifyEitherAuth (capability: Capability) {
+    verifyEitherAuthAccessOfUser (capability: Capability) {
         return (
             req: Express.Request, res: Express.Response, next: Function
         ) => {
             switch (req.auth.type) {
-                case 'user': return this.verifyUser(req, res, next)
-                case 'member': return this.verifyMemberUser(capability)(req, res, next)
+                case 'user': return this.verifyAccessOfUser(req, res, next)
+                case 'member': return this.verifyMemberAccessOfUser(capability)(req, res, next)
                 default: return next(new Errors.UnauthorizedError())
             }
         }
     }
 
-    verifyMemberSurvey(
+    verifyMemberAccessOfSurvey(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
             const member = Middleware.getAuthMember(req)
-            const survey = Middleware.getSurvey(res)
+            const survey = Middleware.getSurvey(req)
 
             if (member.organization_id !== survey.organization_id) {
                 throw new Errors.UnauthorizedError()
@@ -93,33 +92,31 @@ export default class AuthMiddleware {
         return next()
     }
 
-    verifyMemberUser(capability: Capability) {
+    private verifyMemberAccessOfUser(capability: Capability) {
         return (
             req: Express.Request, res: Express.Response, next: Function
         ) => {
-            let member: ModelTypes.MemberInstance
-            let requestedUser: ModelTypes.UserInstance
-
             try {
-                member = Middleware.getAuthMember(req)
-                requestedUser = Middleware.getUser(res)
+                const member = Middleware.getAuthMember(req)
+                const requestedUser = Middleware.getUser(req)
+
+                if (member.user_id !== requestedUser.id) {
+                    throw new Errors.UnauthorizedError()
+                }
             } catch (err) {
                 return next(err)
             }
 
-            if (requestedUser.id !== member.user_id) {
-                return this.verifyAuthMemberCapability(capability)(req, res, next)
-            }
             return next()
         }
     }
 
-    verifyUser(
+    private verifyAccessOfUser(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
             const user = Middleware.getAuthUser(req)
-            const requestedUser = Middleware.getUser(res)
+            const requestedUser = Middleware.getUser(req)
 
             if (user.id !== requestedUser.id) {
                 throw new Errors.UnauthorizedError()
@@ -130,12 +127,12 @@ export default class AuthMiddleware {
         return next()
     }
 
-    verifyMember(
+    verifyAccessOfMember(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
             const member = Middleware.getAuthMember(req)
-            const requestedMember = Middleware.getMember(res)
+            const requestedMember = Middleware.getMember(req)
 
             if (member.organization_id !== requestedMember.organization_id) {
                 throw new Errors.UnauthorizedError()
@@ -146,12 +143,12 @@ export default class AuthMiddleware {
         return next()
     }
 
-    verifyMemberOrganization(
+    verifyMemberAccessOfOrganization(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
             const member = Middleware.getAuthMember(req)
-            const organization = Middleware.getOrganization(res)
+            const organization = Middleware.getOrganization(req)
 
             if (member.organization_id !== organization.id) {
                 throw new Errors.UnauthorizedError()
@@ -180,7 +177,7 @@ export default class AuthMiddleware {
         ) => {
             return (async (): Bluebird<void> => {
                 const member = Middleware.getAuthMember(req)
-                const survey = Middleware.getSurvey(res)
+                const survey = Middleware.getSurvey(req)
 
                 if (!Role.findByRoleId(member.role_id).capabilities.has(capability)) {
 

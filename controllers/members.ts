@@ -20,8 +20,8 @@ export function initMembersController(
     app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyAuthMemberCapability(Capability.Create),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Create).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -93,22 +93,22 @@ export function initMembersController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.getMember(res))
+        return res.json(Middleware.getMember(req))
     })
 
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadMember.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMember,
-        authMiddleware.verifyAuthMemberCapability(Capability.Edit),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyAccessOfMember.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Edit).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = Middleware.getMember(res)
+            const member = Middleware.getMember(req)
 
             if (member.role_id === req.body.role_id) {
                 return res.json(member)
@@ -123,15 +123,15 @@ export function initMembersController(
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         resourcesMiddleware.loadMember.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMember,
-        authMiddleware.verifyAuthMemberCapability(Capability.Delete),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyAccessOfMember.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Delete).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = Middleware.getMember(res)
+            const member = Middleware.getMember(req)
 
             await member.destroy()
 

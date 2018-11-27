@@ -6,7 +6,6 @@ import Factory from '../models/factory'
 import ResourcesMiddleware from '../middleware/resources';
 import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
-import * as Errors from '../errors'
 import {Capability} from '../roles'
 import { isNullOrUndefined } from 'util';
 
@@ -62,7 +61,7 @@ export function initUsersController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.getUser(res))
+        return res.json(Middleware.getUser(req))
     })
 
     app.patch('/users/:user_id', [
@@ -70,13 +69,13 @@ export function initUsersController(
         Validator.body('name').isString(),
         resourcesMiddleware.loadUser.bind(resourcesMiddleware),
         authMiddleware.setEitherAuth.bind(authMiddleware),
-        authMiddleware.verifyEitherAuth(Capability.Edit).bind(authMiddleware),
+        authMiddleware.verifyEitherAuthAccessOfUser(Capability.Edit).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.getUser(res)
+            const user = Middleware.getUser(req)
 
             if (user.name === req.body.name) {
                 return res.json(user) 
@@ -92,13 +91,13 @@ export function initUsersController(
         Validator.param('user_id').isInt({gt: 0}),
         resourcesMiddleware.loadUser.bind(resourcesMiddleware),
         authMiddleware.setEitherAuth.bind(authMiddleware),
-        authMiddleware.verifyEitherAuth(Capability.Delete).bind(authMiddleware),
+        authMiddleware.verifyEitherAuthAccessOfUser(Capability.Delete).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.getUser(res)
+            const user = Middleware.getUser(req)
 
             await user.destroy()
            

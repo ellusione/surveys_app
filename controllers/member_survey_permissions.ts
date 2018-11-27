@@ -16,21 +16,21 @@ export function initMemberSurveyPermissionController(
     resourcesMiddleware: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
-    
+
     app.post('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMemberSurvey,
-        authMiddleware.verifyAuthMemberCapability(Capability.Edit),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Edit).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = Middleware.getSurvey(res)
+            const survey = Middleware.getSurvey(req)
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
@@ -95,9 +95,9 @@ export function initMemberSurveyPermissionController(
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMemberSurvey,
-        authMiddleware.verifyAuthMemberCapability(Capability.Delete),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Delete).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

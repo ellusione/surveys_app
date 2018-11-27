@@ -1,5 +1,5 @@
 import Express from 'express';
-import Validator, { check } from 'express-validator/check'
+import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import ResourcesMiddleware from '../middleware/resources';
@@ -18,8 +18,8 @@ export function initSurveysController(
 
     app.post('/surveys', [
         Validator.body('name').isString(),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyAuthMemberCapability(Capability.Create),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberCapability(Capability.Create).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -83,22 +83,22 @@ export function initSurveysController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.getSurvey(res)) 
+        return res.json(Middleware.getSurvey(req)) 
     })
 
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMemberSurvey,
-        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Edit),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Edit).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = Middleware.getSurvey(res)
+            const survey = Middleware.getSurvey(req)
 
             if (survey.name === req.body.name) {
                 return res.json(survey) 
@@ -113,15 +113,15 @@ export function initSurveysController(
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        authMiddleware.setAuthMember,
-        authMiddleware.verifyMemberSurvey,
-        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Delete),
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
+        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Delete).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = Middleware.getSurvey(res)
+            const survey = Middleware.getSurvey(req)
 
             await survey.destroy()
 

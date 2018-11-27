@@ -7,8 +7,6 @@ import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Capability, managerRole} from '../roles'
-import * as Errors from '../errors'
-
 
 export function initOrganizationsController(
     app: Express.Express, 
@@ -66,21 +64,22 @@ export function initOrganizationsController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.getOrganization(res))
+        return res.json(Middleware.getOrganization(req))
     })
 
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
-        authMiddleware.verifyMemberOrganization,
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.getOrganization(res)
+            const organization = Middleware.getOrganization(req)
 
             if (organization.name === req.body.name) {
                 return res.json(organization) 
@@ -95,14 +94,15 @@ export function initOrganizationsController(
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
-        authMiddleware.verifyMemberOrganization,
+        authMiddleware.setAuthMember.bind(authMiddleware),
+        authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.getOrganization(res)
+            const organization = Middleware.getOrganization(req)
 
             await organization.destroy()
 

@@ -4,12 +4,12 @@ import Sequelize from 'sequelize'
 import Validator from 'express-validator/check'
 import * as Errors from '../errors'
 
-export function setRequiredProperties<T extends LocalResources>(
+export function setRequiredProperties(
     req: Express.Request, res: Express.Response, next: Function
 ) {
     req.auth = {type: 'none'}
 
-    res.customLocals = {type: 'none'}
+    req.resource = {type: 'none'}
     return next()
 }
 
@@ -17,52 +17,52 @@ export function getAuthUser (req: Express.Request) {
     if (req.auth.type !== 'user') {
         throw new Errors.UnexpectedError('unexpected auth type')
     }
-    if (!req.auth.user) {
-        throw new Errors.UnexpectedError('unexpected null member')
+    if (!req.auth.instance) {
+        throw new Errors.UnexpectedError('unexpected null user')
     }
-    return req.auth.user
+    return req.auth.instance
 }
 
 export function getAuthMember (req: Express.Request) {
     if (req.auth.type !== 'member') {
         throw new Errors.UnexpectedError('unexpected auth type')
     }
-    if (!req.auth.member) {
+    if (!req.auth.instance) {
         throw new Errors.UnexpectedError('unexpected null member')
     }
-    return req.auth.member
+    return req.auth.instance
 }
 
-export function getUser (res: Express.Response) {
-    if (res.customLocals.type !== 'user') {
-        throw new Errors.UnexpectedError('unexpected customLocals type')
+export function getUser (req: Express.Request) {
+    if (req.resource.type !== 'user') {
+        throw new Errors.UnexpectedError('unexpected resource type')
     }
 
-    return res.customLocals.resource
+    return req.resource.instance
 }
 
-export function getSurvey (res: Express.Response) {
-    if (res.customLocals.type !== 'survey') {
-        throw new Errors.UnexpectedError('unexpected customLocals type')
+export function getSurvey (req: Express.Request) {
+    if (req.resource.type !== 'survey') {
+        throw new Errors.UnexpectedError('unexpected resource type')
     }
 
-    return res.customLocals.resource
+    return req.resource.instance
 }
 
-export function getOrganization (res: Express.Response) {
-    if (res.customLocals.type !== 'organization') {
-        throw new Errors.UnexpectedError('unexpected customLocals type')
+export function getOrganization (req: Express.Request) {
+    if (req.resource.type !== 'organization') {
+        throw new Errors.UnexpectedError('unexpected resource type')
     }
 
-    return res.customLocals.resource
+    return req.resource.instance
 }
 
-export function getMember (res: Express.Response) {
-    if (res.customLocals.type !== 'member') {
-        throw new Errors.UnexpectedError('unexpected customLocals type')
+export function getMember (req: Express.Request) {
+    if (req.resource.type !== 'member') {
+        throw new Errors.UnexpectedError('unexpected resource type')
     }
 
-    return res.customLocals.resource
+    return req.resource.instance
 }
 
 export function calculatePaginationOffset (page: number, limit: number) {

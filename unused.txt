@@ -322,7 +322,7 @@ declare interface TResponse extends Express.Response{
         resource: ModelTypes.BaseInstance
         authMember: MemberAuth
         constructor (instance: ModelTypes.BaseInstance, authMember: MemberAuth) {
-            this.resource = instance
+            this.instance = instance
             this.authMember = authMember
         }
     }
@@ -332,6 +332,27 @@ class MemberSurveyPermissionsLocalResources implements LocalResources {
     resource: ModelTypes.MemberInstance
 
     constructor(resource: ModelTypes.MemberInstance) {
-        this.resource = resource
+        this.instance = resource
     }
 }
+
+    private verifyMemberAccessOfUser(capability: Capability) {
+        return (
+            req: Express.Request, res: Express.Response, next: Function
+        ) => {
+            let member: ModelTypes.MemberInstance
+            let requestedUser: ModelTypes.UserInstance
+
+            try {
+                member = Middleware.getAuthMember(req)
+                requestedUser = Middleware.getUser(req)
+            } catch (err) {
+                return next(err)
+            }
+
+            if (requestedUser.id !== member.user_id) {
+                return this.verifyAuthMemberCapability(capability)(req, res, next)
+            }
+            return next()
+        }
+    }

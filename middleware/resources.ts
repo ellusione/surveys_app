@@ -20,9 +20,9 @@ export default class Middleware {
             if (!user) {
                 throw new Errors.NotFoundError(ModelTypes.userName, userId)
             }
-            res.customLocals = {
+            req.resource = {
                 type: 'user',
-                resource: user
+                instance: user
             }
         })().asCallback(next)
     }
@@ -36,9 +36,9 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
             }
 
-            res.customLocals = {
+            req.resource = {
                 type: 'survey',
-                resource: survey
+                instance: survey
             }
         })().asCallback(next)
     }
@@ -52,9 +52,9 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
             }
 
-            res.customLocals = {
+            req.resource = {
                 type: 'organization',
-                resource: organization
+                instance: organization
             }
         })().asCallback(next)
     }
@@ -68,9 +68,9 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
             }
 
-            res.customLocals = {
+            req.resource = {
                 type: 'member',
-                resource: member
+                instance: member
             }
         })().asCallback(next)
     }
