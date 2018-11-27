@@ -3,9 +3,7 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import { isNullOrUndefined } from 'util';
 import Factory from '../models/factory'
-import ResourcesMiddleware from '../middleware/resource/get';
-import AuthMiddleware from '../middleware/auth/set';
-import * as Middleware from '../middleware/general'
+import * as Middleware from '../middleware';
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
 
@@ -13,24 +11,23 @@ import * as Errors from '../errors'
 export function initMemberSurveyPermissionController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    loadResource: ResourcesMiddleware, 
-    authMiddleware: AuthMiddleware
+    middleware: Middleware.Middleware
 ) {
 
     app.post('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        loadResource.loadSurvey.bind(loadResource),
-        authMiddleware.setAuthMember.bind(authMiddleware),
-        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
-        authMiddleware.verifyAuthMemberCapability(Capability.Edit).bind(authMiddleware),
-        Middleware.validationErrorHandlingFn  
+        middleware.loadResource.loadSurvey.bind(middleware.loadResource),
+        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.verifyAuthAccess.verifyMemberAccessOfSurvey.bind(middleware.verifyAuthAccess),
+        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = Middleware.getSurvey(req)
+            const survey = Middleware.GetResource.getSurvey(req)
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
@@ -63,7 +60,7 @@ export function initMemberSurveyPermissionController(
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
         Validator.query('user_id').optional().isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn  
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -78,7 +75,7 @@ export function initMemberSurveyPermissionController(
 
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
-            const offset = Middleware.calculatePaginationOffset(page, limit)
+            const offset = Middleware.Base.calculatePaginationOffset(page, limit)
 
             const result = await modelsFactory.memberSurveyPermissionModel.findAll({
                 where: whereCondition,
@@ -94,11 +91,11 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        loadResource.loadSurvey.bind(loadResource),
-        authMiddleware.setAuthMember.bind(authMiddleware),
-        authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
-        authMiddleware.verifyAuthMemberCapability(Capability.Delete).bind(authMiddleware),
-        Middleware.validationErrorHandlingFn  
+        middleware.loadResource.loadSurvey.bind(middleware.loadResource),
+        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.verifyAuthAccess.verifyMemberAccessOfSurvey.bind(middleware.verifyAuthAccess),
+        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
 

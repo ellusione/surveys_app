@@ -4,7 +4,7 @@ import Sequelize from 'sequelize'
 import Validator from 'express-validator/check'
 import * as Errors from '../errors'
 
-export default class GeneralMiddleware {
+export class Base {
     static setRequiredProperties(
         req: Express.Request, res: Express.Response, next: Function
     ) {

@@ -6,14 +6,13 @@ import {initOrganizationsController} from './organizations'
 import {initMemberSurveyPermissionController} from './member_survey_permissions'
 import Factory from '../models/factory'
 import { initTokensController } from './tokens';
-import ResourcesMiddleware from '../middleware/resource/get';
-import AuthMiddleware from '../middleware/auth/set';
+import * as Middleware from '../middleware';
 
-export function initRoutes (app: Express.Express, modelsFactory: Factory, loadResource: ResourcesMiddleware, authMiddleware: AuthMiddleware) {
-    initTokensController(app, modelsFactory, loadResource, authMiddleware)
-    initSurveysController(app, modelsFactory, loadResource, authMiddleware)
-    initUsersController(app, modelsFactory, loadResource, authMiddleware)
-    initMembersController(app, modelsFactory, loadResource, authMiddleware)
-    initOrganizationsController(app, modelsFactory, loadResource, authMiddleware)
-    initMemberSurveyPermissionController(app, modelsFactory, loadResource, authMiddleware)
+export function initRoutes (app: Express.Express, modelsFactory: Factory, middleware: Middleware.Middleware) {
+    initTokensController(app, modelsFactory, middleware)
+    initSurveysController(app, modelsFactory, middleware)
+    initUsersController(app, modelsFactory, middleware)
+    initMembersController(app, modelsFactory, middleware)
+    initOrganizationsController(app, modelsFactory, middleware)
+    initMemberSurveyPermissionController(app, modelsFactory, middleware)
 }

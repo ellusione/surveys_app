@@ -2,30 +2,25 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
-import ResourcesMiddleware from '../middleware/resource/get';
-import AuthMiddleware from '../middleware/auth/set';
-import * as Middleware from '../middleware/general'
+import * as Middleware from '../middleware';
 import { isNullOrUndefined } from 'util';
 import {Capability, managerRole} from '../roles'
 
 export function initOrganizationsController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    loadResource: LoadResource, 
-    setAuth: SetAuth,
-    verifyAuthAccess: VerifyAuthAccess,
-    verifyAuthCapability: VerifyAuthCapability
+    middleware: Middleware.Middleware
 ) {
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        authMiddleware.setAuthUser.bind(authMiddleware),
-        Middleware.validationErrorHandlingFn  
+        middleware.setAuth.setAuthUser.bind(middleware.setAuth),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.getAuthUser(req)
+            const user = Middleware.GetAuth.getAuthUser(req)
 
             const result = await modelsFactory.organizationModel.create({name: req.body.name})
 
@@ -42,7 +37,7 @@ export function initOrganizationsController(
     app.get('/organizations', [
         Validator.query('page').optional().isInt({gt: -1}), 
         Validator.query('size').optional().isInt({lt: 101, gt: 0}),
-        Middleware.validationErrorHandlingFn  
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -52,7 +47,7 @@ export function initOrganizationsController(
             const limit = isNullOrUndefined(req.query.size) ? 10 : req.query.size
 
             const result = await modelsFactory.organizationModel.findAndCountAll({
-                offset: Middleware.calculatePaginationOffset(page, limit),
+                offset: Middleware.Base.calculatePaginationOffset(page, limit),
                 limit
             })
 
@@ -62,26 +57,26 @@ export function initOrganizationsController(
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        loadResource.loadOrganization.bind(loadResource),
-        Middleware.validationErrorHandlingFn  
+        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.getOrganization(req))
+        return res.json(Middleware.GetResource.getOrganization(req))
     })
 
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        loadResource.loadOrganization.bind(loadResource),
-        authMiddleware.setAuthMember.bind(authMiddleware),
-        authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
-        authMiddleware.verifyAuthMemberCapability(Capability.Edit),
-        Middleware.validationErrorHandlingFn  
+        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
+        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.verifyAuthAccess.verifyMemberAccessOfOrganization.bind(middleware.verifyAuthAccess),
+        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.getOrganization(req)
+            const organization = Middleware.GetResource.getOrganization(req)
 
             if (organization.name === req.body.name) {
                 return res.json(organization) 
@@ -95,16 +90,16 @@ export function initOrganizationsController(
 
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        loadResource.loadOrganization.bind(loadResource),
-        authMiddleware.setAuthMember.bind(authMiddleware),
-        authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
-        authMiddleware.verifyAuthMemberCapability(Capability.Delete),
-        Middleware.validationErrorHandlingFn  
+        middleware.loadResource.loadOrganization.bind(middleware.loadResource),
+        middleware.setAuth.setAuthMember.bind(middleware.setAuth),
+        middleware.verifyAuthAccess.verifyMemberAccessOfOrganization.bind(middleware.verifyAuthAccess),
+        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.verifyAuthAccess),
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.getOrganization(req)
+            const organization = Middleware.GetResource.getOrganization(req)
 
             await organization.destroy()
 

@@ -344,7 +344,7 @@ class MemberSurveyPermissionsLocalResources implements LocalResources {
             let requestedUser: ModelTypes.UserInstance
 
             try {
-                member = Middleware.getAuthMember(req)
+                member = Middleware.GetAuth.getAuthMember(req)
                 requestedUser = Middleware.getUser(req)
             } catch (err) {
                 return next(err)

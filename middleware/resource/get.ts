@@ -1,7 +1,7 @@
 import Express from 'express';
 import * as Errors from '../../errors'
 
-export default class GetResource {
+export class GetResource {
     static getUser (req: Express.Request) {
         if (req.resource.type !== 'user') {
             throw new Errors.UnexpectedError('unexpected resource type')

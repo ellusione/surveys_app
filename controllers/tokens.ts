@@ -9,22 +9,19 @@ import LoadResource from '../middleware/resource/load';
 import SetAuth from '../middleware/auth/set';
 import VerifyAuthAccess from '../middleware/auth/verify_access'
 import VerifyAuthCapability from '../middleware/auth/verify_capability';
-import * as Middleware from '../middleware/general'
+import * as Middleware from '../middleware';
 import * as config from '../config'
 
 export function initTokensController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    loadResource: LoadResource, 
-    setAuth: SetAuth,
-    verifyAuthAccess: VerifyAuthAccess,
-    verifyAuthCapability: VerifyAuthCapability
+    middleware: Middleware.Middleware
 ) {
 
     app.post('/user_tokens', [
         Validator.body('username').isString(),
         Validator.body('password').isString(),
-        Middleware.validationErrorHandlingFn  
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
@@ -51,7 +48,7 @@ export function initTokensController(
 
     app.post('/member_tokens', [
         Validator.body('organization_id').isInt({gt: 0}),
-        Middleware.validationErrorHandlingFn  
+        Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         

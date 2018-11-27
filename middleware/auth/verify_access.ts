@@ -1,21 +1,21 @@
 import Express from 'express'
 import * as Errors from '../../errors'
-import GetAuth from './get'
-import GetResource from '../resource/get'
+import {GetAuth} from './get'
+import {GetResource} from '../resource/get'
 
-export default class VerifyAuthAccess {
+export class VerifyAuthAccess {
 
-    verifyEitherAuthAccessOfUser(
+    static verifyEitherAuthAccessOfUser(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         switch (req.auth.type) {
-            case 'user': return this.verifyAccessOfUser(req, res, next)
-            case 'member': return this.verifyMemberAccessOfUser(req, res, next)
+            case 'user': return VerifyAuthAccess.verifyAccessOfUser(req, res, next)
+            case 'member': return VerifyAuthAccess.verifyMemberAccessOfUser(req, res, next)
             default: return next(new Errors.UnauthorizedError())
         }
     }
 
-    private verifyAccessOfUser(
+    private static verifyAccessOfUser(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
@@ -31,7 +31,7 @@ export default class VerifyAuthAccess {
         return next()
     }
 
-    private verifyMemberAccessOfUser(
+    private static verifyMemberAccessOfUser(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
@@ -48,7 +48,7 @@ export default class VerifyAuthAccess {
         return next()
     }
 
-    verifyMemberAccessOfSurvey(
+    static verifyMemberAccessOfSurvey(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
@@ -64,7 +64,7 @@ export default class VerifyAuthAccess {
         return next()
     }
 
-    verifyAccessOfMember(
+    static verifyAccessOfMember(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
@@ -80,7 +80,7 @@ export default class VerifyAuthAccess {
         return next()
     }
 
-    verifyMemberAccessOfOrganization(
+    static verifyMemberAccessOfOrganization(
         req: Express.Request, res: Express.Response, next: Function
     ) {
         try {
