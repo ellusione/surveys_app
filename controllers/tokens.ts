@@ -5,16 +5,20 @@ import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
 import * as Errors from '../errors'
-import ResourcesMiddleware from '../middleware/resources';
-import AuthMiddleware from '../middleware/auth';
+import LoadResource from '../middleware/resource/load';
+import SetAuth from '../middleware/auth/set';
+import VerifyAuthAccess from '../middleware/auth/verify_access'
+import VerifyAuthCapability from '../middleware/auth/verify_capability';
 import * as Middleware from '../middleware'
 import * as config from '../config'
 
 export function initTokensController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    resourcesMiddleware: ResourcesMiddleware, 
-    authMiddleware: AuthMiddleware
+    loadResource: LoadResource, 
+    setAuth: SetAuth,
+    verifyAuthAccess: VerifyAuthAccess,
+    verifyAuthCapability: VerifyAuthCapability
 ) {
 
     app.post('/user_tokens', [

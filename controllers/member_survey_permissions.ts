@@ -3,8 +3,8 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import { isNullOrUndefined } from 'util';
 import Factory from '../models/factory'
-import ResourcesMiddleware from '../middleware/resources';
-import AuthMiddleware from '../middleware/auth';
+import ResourcesMiddleware from '../middleware/resource/get';
+import AuthMiddleware from '../middleware/auth/set';
 import * as Middleware from '../middleware'
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
@@ -13,7 +13,7 @@ import * as Errors from '../errors'
 export function initMemberSurveyPermissionController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    resourcesMiddleware: ResourcesMiddleware, 
+    loadResource: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
 
@@ -21,7 +21,7 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
+        loadResource.loadSurvey.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Edit).bind(authMiddleware),
@@ -94,7 +94,7 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
+        loadResource.loadSurvey.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Delete).bind(authMiddleware),

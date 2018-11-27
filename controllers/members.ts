@@ -3,8 +3,8 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
-import ResourcesMiddleware from '../middleware/resources';
-import AuthMiddleware from '../middleware/auth';
+import ResourcesMiddleware from '../middleware/resource/get';
+import AuthMiddleware from '../middleware/auth/set';
 import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Role, Capability} from '../roles'
@@ -13,7 +13,7 @@ import * as Errors from '../errors'
 export function initMembersController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    resourcesMiddleware: ResourcesMiddleware, 
+    loadResource: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
 
@@ -89,7 +89,7 @@ export function initMembersController(
 
     app.get('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
+        loadResource.loadMember.bind(loadResource),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -99,7 +99,7 @@ export function initMembersController(
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
+        loadResource.loadMember.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyAccessOfMember.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Edit).bind(authMiddleware),
@@ -122,7 +122,7 @@ export function initMembersController(
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        resourcesMiddleware.loadMember.bind(resourcesMiddleware),
+        loadResource.loadMember.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyAccessOfMember.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Delete).bind(authMiddleware),

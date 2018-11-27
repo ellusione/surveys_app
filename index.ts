@@ -3,8 +3,8 @@ import Http from 'http';
 import {initRoutes} from './controllers'
 import {initDB} from './database'
 import Factory from './models/factory'
-import ResourcesMiddleware from './middleware/resources'
-import AuthMiddleware from './middleware/auth'
+import ResourcesMiddleware from './middleware/resource/get'
+import AuthMiddleware from './middleware/auth/set'
 import * as Middleware from './middleware'
 
 const port = process.env.PORT || 3000
@@ -20,7 +20,7 @@ export async function init(modelsFactory: Factory) {
 
     console.log("Started server")
 
-    const resourcesMiddleware = new ResourcesMiddleware(modelsFactory)
+    const loadResource = new ResourcesMiddleware(modelsFactory)
     const authMiddleware = new AuthMiddleware(modelsFactory)
 
     app.use(Express.json())
@@ -29,7 +29,7 @@ export async function init(modelsFactory: Factory) {
 
     app.use(authMiddleware.parseAuthHeader)
 
-    initRoutes(app, modelsFactory, resourcesMiddleware, authMiddleware)
+    initRoutes(app, modelsFactory, loadResource, authMiddleware)
 
     app.use(Middleware.errorHandlingFn)
 

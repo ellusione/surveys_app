@@ -2,8 +2,8 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
-import ResourcesMiddleware from '../middleware/resources';
-import AuthMiddleware from '../middleware/auth';
+import ResourcesMiddleware from '../middleware/resource/get';
+import AuthMiddleware from '../middleware/auth/set';
 import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Capability} from '../roles'
@@ -12,8 +12,10 @@ import * as Errors from '../errors'
 export function initSurveysController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    resourcesMiddleware: ResourcesMiddleware, 
-    authMiddleware: AuthMiddleware
+    loadResource: LoadResource, 
+    setAuth: SetAuth,
+    verifyAuthAccess: VerifyAuthAccess,
+    verifyAuthCapability: VerifyAuthCapability
 ) {
 
     app.post('/surveys', [
@@ -79,7 +81,7 @@ export function initSurveysController(
 
     app.get('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
+        loadResource.loadSurvey.bind(loadResource),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -89,7 +91,7 @@ export function initSurveysController(
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
+        loadResource.loadSurvey.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
         authMiddleware.verifyAuthMemberSurveyCapability(Capability.Edit).bind(authMiddleware),
@@ -112,7 +114,7 @@ export function initSurveysController(
 
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
-        resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
+        loadResource.loadSurvey.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfSurvey.bind(authMiddleware),
         authMiddleware.verifyAuthMemberSurveyCapability(Capability.Delete).bind(authMiddleware),

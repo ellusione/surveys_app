@@ -13,58 +13,6 @@ export function setRequiredProperties(
     return next()
 }
 
-export function getAuthUser (req: Express.Request) {
-    if (req.auth.type !== 'user') {
-        throw new Errors.UnexpectedError('unexpected auth type')
-    }
-    if (!req.auth.instance) {
-        throw new Errors.UnexpectedError('unexpected null user')
-    }
-    return req.auth.instance
-}
-
-export function getAuthMember (req: Express.Request) {
-    if (req.auth.type !== 'member') {
-        throw new Errors.UnexpectedError('unexpected auth type')
-    }
-    if (!req.auth.instance) {
-        throw new Errors.UnexpectedError('unexpected null member')
-    }
-    return req.auth.instance
-}
-
-export function getUser (req: Express.Request) {
-    if (req.resource.type !== 'user') {
-        throw new Errors.UnexpectedError('unexpected resource type')
-    }
-
-    return req.resource.instance
-}
-
-export function getSurvey (req: Express.Request) {
-    if (req.resource.type !== 'survey') {
-        throw new Errors.UnexpectedError('unexpected resource type')
-    }
-
-    return req.resource.instance
-}
-
-export function getOrganization (req: Express.Request) {
-    if (req.resource.type !== 'organization') {
-        throw new Errors.UnexpectedError('unexpected resource type')
-    }
-
-    return req.resource.instance
-}
-
-export function getMember (req: Express.Request) {
-    if (req.resource.type !== 'member') {
-        throw new Errors.UnexpectedError('unexpected resource type')
-    }
-
-    return req.resource.instance
-}
-
 export function calculatePaginationOffset (page: number, limit: number) {
     return limit*(page-1)
 }

@@ -1,8 +1,8 @@
 import Express from 'express';
-import Factory from '../models/factory'
-import * as ModelTypes from '../models'
+import Factory from '../../models/factory'
+import * as ModelTypes from '../../models'
 import Bluebird from 'bluebird'
-import * as Errors from '../errors'
+import * as Errors from '../../errors'
 
 
 export default class Middleware {

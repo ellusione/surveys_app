@@ -2,8 +2,8 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
-import ResourcesMiddleware from '../middleware/resources';
-import AuthMiddleware from '../middleware/auth';
+import ResourcesMiddleware from '../middleware/resource/get';
+import AuthMiddleware from '../middleware/auth/set';
 import * as Middleware from '../middleware'
 import { isNullOrUndefined } from 'util';
 import {Capability, managerRole} from '../roles'
@@ -11,8 +11,10 @@ import {Capability, managerRole} from '../roles'
 export function initOrganizationsController(
     app: Express.Express, 
     modelsFactory: Factory, 
-    resourcesMiddleware: ResourcesMiddleware, 
-    authMiddleware: AuthMiddleware
+    loadResource: LoadResource, 
+    setAuth: SetAuth,
+    verifyAuthAccess: VerifyAuthAccess,
+    verifyAuthCapability: VerifyAuthCapability
 ) {
     
     app.post('/organizations', [
@@ -60,7 +62,7 @@ export function initOrganizationsController(
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
+        loadResource.loadOrganization.bind(loadResource),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -70,7 +72,7 @@ export function initOrganizationsController(
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
+        loadResource.loadOrganization.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Edit),
@@ -93,7 +95,7 @@ export function initOrganizationsController(
 
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        resourcesMiddleware.loadOrganization.bind(resourcesMiddleware),
+        loadResource.loadOrganization.bind(loadResource),
         authMiddleware.setAuthMember.bind(authMiddleware),
         authMiddleware.verifyMemberAccessOfOrganization.bind(authMiddleware),
         authMiddleware.verifyAuthMemberCapability(Capability.Delete),
