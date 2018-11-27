@@ -14,13 +14,13 @@ export function initOrganizationsController(
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        middleware.SetAuth.setAuthUser.bind(middleware.SetAuth),
+        middleware.authSetter.setAuthUser.bind(middleware.authSetter),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.GetAuth.getAuthUser(req)
+            const user = Middleware.Auth.getAuthUser(req)
 
             const result = await modelsFactory.organizationModel.create({name: req.body.name})
 
@@ -57,26 +57,26 @@ export function initOrganizationsController(
 
     app.get('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
+        middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.GetResource.getOrganization(req))
+        return res.json(Middleware.Resource.getOrganization(req))
     })
 
     app.patch('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyMemberAccessOfOrganization,
+        middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.GetResource.getOrganization(req)
+            const organization = Middleware.Resource.getOrganization(req)
 
             if (organization.name === req.body.name) {
                 return res.json(organization) 
@@ -90,16 +90,16 @@ export function initOrganizationsController(
 
     app.delete('/organizations/:organization_id', [
         Validator.param('organization_id').isInt({gt: 0}),
-        middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Delete),
+        middleware.resourceLoader.loadOrganization.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyMemberAccessOfOrganization,
+        middleware.authCapability.verifyMember(Capability.Delete),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organization = Middleware.GetResource.getOrganization(req)
+            const organization = Middleware.Resource.getOrganization(req)
 
             await organization.destroy()
 

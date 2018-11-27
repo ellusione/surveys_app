@@ -17,14 +17,14 @@ export function initMembersController(
     app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        middleware.VerifyAuthCapability.verifyMember(Capability.Create).bind(middleware.VerifyAuthCapability),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        middleware.authCapability.verifyMember(Capability.Create).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = Middleware.GetAuth.getAuthMember(req).organization_id
+            const organizationId = Middleware.Auth.getAuthMember(req).organization_id
 
             const userId = req.body.user_id
 
@@ -86,26 +86,26 @@ export function initMembersController(
 
     app.get('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
+        middleware.resourceLoader.loadMember.bind(middleware.resourceLoader),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.GetResource.getMember(req))
+        return res.json(Middleware.Resource.getMember(req))
     })
 
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyAccessOfMember,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.resourceLoader.loadMember.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyAccessOfMember,
+        middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = Middleware.GetResource.getMember(req)
+            const member = Middleware.Resource.getMember(req)
 
             if (member.role_id === req.body.role_id) {
                 return res.json(member)
@@ -119,16 +119,16 @@ export function initMembersController(
 
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
-        middleware.LoadResource.loadMember.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyAccessOfMember,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        middleware.resourceLoader.loadMember.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyAccessOfMember,
+        middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = Middleware.GetResource.getMember(req)
+            const member = Middleware.Resource.getMember(req)
 
             await member.destroy()
 

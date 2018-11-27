@@ -6,7 +6,7 @@ import * as Errors from '../../errors'
 import jwt from 'jsonwebtoken'
 import * as config from '../../config'
 
-export default class LoadAuth {
+export default class AuthSetter {
     modelsFactory: Factory
     constructor (modelsFactory: Factory) {
         this.modelsFactory = modelsFactory

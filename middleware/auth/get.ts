@@ -1,7 +1,7 @@
 import Express from 'express'
 import * as Errors from '../../errors'
 
-export class GetAuth {
+export class Auth {
     static getAuthUser (req: Express.Request) {
         if (req.auth.type !== 'user') {
             throw new Errors.UnexpectedError('unexpected auth type')

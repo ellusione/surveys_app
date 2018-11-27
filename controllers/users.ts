@@ -53,25 +53,25 @@ export function initUsersController(
 
     app.get('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
+        middleware.resourceLoader.loadUser.bind(middleware.resourceLoader),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(Middleware.GetResource.getUser(req))
+        return res.json(Middleware.Resource.getUser(req))
     })
 
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
-        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
-        middleware.SetAuth.setEitherAuth.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyEitherAuthAccessOfUser,
+        middleware.resourceLoader.loadUser.bind(middleware.resourceLoader),
+        middleware.authSetter.setEitherAuth.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyEitherAuthAccessOfUser,
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.GetResource.getUser(req)
+            const user = Middleware.Resource.getUser(req)
 
             if (user.name === req.body.name) {
                 return res.json(user) 
@@ -85,15 +85,15 @@ export function initUsersController(
 
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
-        middleware.LoadResource.loadUser.bind(middleware.LoadResource),
-        middleware.SetAuth.setEitherAuth.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyEitherAuthAccessOfUser,
+        middleware.resourceLoader.loadUser.bind(middleware.resourceLoader),
+        middleware.authSetter.setEitherAuth.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyEitherAuthAccessOfUser,
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = Middleware.GetResource.getUser(req)
+            const user = Middleware.Resource.getUser(req)
 
             await user.destroy()
            

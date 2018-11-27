@@ -1,25 +1,25 @@
 
-import LoadResource from '../middleware/resource/load';
-import SetAuth from '../middleware/auth/set';
-import VerifyAuthCapability from '../middleware/auth/verify_capability';
+import ResourceLoader from '../middleware/resource/load';
+import AuthSetter from '../middleware/auth/set';
+import AuthCapability from './auth/capability';
 import Factory from '../models/factory'
 
-export {GetResource} from '../middleware/resource/get';
-export {GetAuth} from '../middleware/auth/get';
-export {VerifyAuthAccess} from '../middleware/auth/verify_access'
+export {Resource} from '../middleware/resource/get';
+export {Auth} from '../middleware/auth/get';
+export {AuthAccess} from './auth/access'
 export {Base} from '../middleware/base'
 
 export class Middleware {
 
-    LoadResource: LoadResource
+    resourceLoader: ResourceLoader
 
-    SetAuth: SetAuth
-    VerifyAuthCapability: VerifyAuthCapability
+    authSetter: AuthSetter
+    authCapability: AuthCapability
     
     constructor (modelsFactory: Factory) {
-        this.LoadResource = new LoadResource(modelsFactory)
+        this.resourceLoader = new ResourceLoader(modelsFactory)
 
-        this.SetAuth = new SetAuth(modelsFactory)
-        this.VerifyAuthCapability = new VerifyAuthCapability(modelsFactory)
+        this.authSetter = new AuthSetter(modelsFactory)
+        this.authCapability = new AuthCapability(modelsFactory)
     }
 }

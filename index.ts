@@ -4,7 +4,6 @@ import {initRoutes} from './controllers'
 import {initDB} from './database'
 import Factory from './models/factory'
 import * as Middleware from './middleware/'
-import sequelize = require('sequelize');
 
 const port = process.env.PORT || 3000
 
@@ -31,7 +30,7 @@ export async function init(modelsFactory: Factory) {
 
     app.use(Middleware.Base.setRequiredProperties)
 
-    app.use(middleware.SetAuth.parseAuthHeader)
+    app.use(middleware.authSetter.parseAuthHeader)
 
     initRoutes(app, modelsFactory, middleware)
 

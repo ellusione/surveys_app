@@ -18,16 +18,16 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyMemberAccessOfSurvey,
+        middleware.authCapability.verifyMember(Capability.Edit).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = Middleware.GetResource.getSurvey(req)
+            const survey = Middleware.Resource.getSurvey(req)
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
@@ -91,10 +91,10 @@ export function initMemberSurveyPermissionController(
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
-        middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
-        middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyMember(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        middleware.resourceLoader.loadSurvey.bind(middleware.resourceLoader),
+        middleware.authSetter.setAuthMember.bind(middleware.authSetter),
+        Middleware.AuthAccess.verifyMemberAccessOfSurvey,
+        middleware.authCapability.verifyMember(Capability.Delete).bind(middleware.authCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

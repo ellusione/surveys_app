@@ -4,7 +4,7 @@ import * as ModelTypes from '../../models'
 import Bluebird from 'bluebird'
 import * as Errors from '../../errors'
 
-export default class LoadResource {
+export default class ResourceLoader {
     modelsFactory: Factory
 
     constructor (modelsFactory: Factory) {
