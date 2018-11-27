@@ -387,7 +387,7 @@ describe('Survey test', () => {
                 method: 'DELETE',
                 headers: {'x-access-token': otherMemberInfo.memberToken}
             })
-            expect(res.statusCode).to.equal(403)
+            expect(res.statusCode).to.equal(401)
         })
 
         it('Fail to delete missing survey', async () => {

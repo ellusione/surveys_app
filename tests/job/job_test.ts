@@ -6,7 +6,7 @@ import {initDB} from '../../database'
 import * as Roles from '../../roles'
 import {getDeletionRunnerFn} from '../../job'
 
-describe('Survey test', () => {
+describe('Job test', () => {
 
     let modelsFactory: Factory
     let deletionRunnerFn: Function

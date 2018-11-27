@@ -17,7 +17,7 @@ export function initOrganizationsController(
     
     app.post('/organizations', [
         Validator.body('name').isString(),
-        authMiddleware.setAuthUser,
+        authMiddleware.setAuthUser.bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
