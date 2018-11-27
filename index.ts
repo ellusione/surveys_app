@@ -25,6 +25,8 @@ export async function init(modelsFactory: Factory) {
 
     app.use(Express.json())
 
+    app.use(Middleware.setRequiredProperties)
+
     app.use(authMiddleware.parseAuthHeader)
 
     initRoutes(app, modelsFactory, resourcesMiddleware, authMiddleware)

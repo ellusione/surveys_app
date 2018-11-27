@@ -16,32 +16,18 @@ export function initMembersController(
     resourcesMiddleware: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
-    function checkAuth (capability: Capability) {
-        return (req: Express.Request, res: Express.Response, next: Function) => {
-
-            return (async (): Bluebird<void> => {
-                switch (req.auth.type) {
-                    case 'member': {
-                        res.locals.auth_member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
-                        return
-                    }
-
-                    default: throw new Errors.UnauthorizedError()
-                }
-            })().asCallback(next)
-        }
-    }
 
     app.post('/members', [
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
-        checkAuth(Capability.Create),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyAuthMemberCapability(Capability.Create),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const organizationId = (<ModelTypes.MemberInstance> res.locals.auth_member).organization_id
+            const organizationId = Middleware.getAuthMember(req).organization_id
 
             const userId = req.body.user_id
 
@@ -107,20 +93,22 @@ export function initMembersController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(res.locals.member)
+        return res.json(Middleware.getMember(res))
     })
 
     app.patch('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadMember.bind(resourcesMiddleware),
-        checkAuth(Capability.Edit),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMember,
+        authMiddleware.verifyAuthMemberCapability(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = <ModelTypes.MemberInstance> res.locals.member
+            const member = Middleware.getMember(res)
 
             if (member.role_id === req.body.role_id) {
                 return res.json(member)
@@ -135,13 +123,15 @@ export function initMembersController(
     app.delete('/members/:member_id', [
         Validator.param('member_id').isInt({gt: 0}),
         resourcesMiddleware.loadMember.bind(resourcesMiddleware),
-        checkAuth(Capability.Delete),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMember,
+        authMiddleware.verifyAuthMemberCapability(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = <ModelTypes.MemberInstance> res.locals.member
+            const member = Middleware.getMember(res)
 
             await member.destroy()
 

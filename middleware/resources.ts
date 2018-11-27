@@ -1,9 +1,9 @@
-
 import Express from 'express';
 import Factory from '../models/factory'
 import * as ModelTypes from '../models'
 import Bluebird from 'bluebird'
 import * as Errors from '../errors'
+
 
 export default class Middleware {
     modelsFactory: Factory
@@ -20,8 +20,10 @@ export default class Middleware {
             if (!user) {
                 throw new Errors.NotFoundError(ModelTypes.userName, userId)
             }
-
-            res.locals.user = user
+            res.customLocals = {
+                type: 'user',
+                resource: user
+            }
         })().asCallback(next)
     }
 
@@ -34,7 +36,10 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.surveyName, surveyId)
             }
 
-            res.locals.survey = survey
+            res.customLocals = {
+                type: 'survey',
+                resource: survey
+            }
         })().asCallback(next)
     }
 
@@ -47,7 +52,10 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.organizationName, organizationId)
             }
 
-            res.locals.organization = organization
+            res.customLocals = {
+                type: 'organization',
+                resource: organization
+            }
         })().asCallback(next)
     }
 
@@ -60,7 +68,10 @@ export default class Middleware {
                 throw new Errors.NotFoundError(ModelTypes.memberName, memberId)
             }
 
-            res.locals.member = member
+            res.customLocals = {
+                type: 'member',
+                resource: member
+            }
         })().asCallback(next)
     }
 }

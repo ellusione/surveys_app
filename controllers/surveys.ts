@@ -1,8 +1,7 @@
 import Express from 'express';
-import Validator from 'express-validator/check'
+import Validator, { check } from 'express-validator/check'
 import Bluebird from 'bluebird'
 import Factory from '../models/factory'
-import * as ModelTypes from '../models'
 import ResourcesMiddleware from '../middleware/resources';
 import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
@@ -16,47 +15,17 @@ export function initSurveysController(
     resourcesMiddleware: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
-    function checkAuth (capability: Capability) {
-        return (req: Express.Request, res: Express.Response, next: Function) => {
-
-            return (async (): Bluebird<void> => {
-                switch (req.auth.type) {
-                    case 'member': {
-                        res.locals.auth_member = await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
-                        return
-                    }
-
-                    default: throw new Errors.UnauthorizedError()
-                }
-            })().asCallback(next)
-        }
-    }
-
-    function checkSurveyAuth (capability: Capability) {
-        return (req: Express.Request, res: Express.Response, next: Function) => {
-
-            return (async (): Bluebird<void> => {
-                switch (req.auth.type) {
-                    case 'member': {
-                        res.locals.auth_member = await authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey, capability)
-                        return
-                    }
-
-                    default: throw new Errors.UnauthorizedError()
-                }
-            })().asCallback(next)
-        }
-    }
 
     app.post('/surveys', [
         Validator.body('name').isString(),
-        checkAuth(Capability.Create),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyAuthMemberCapability(Capability.Create),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const member = <ModelTypes.MemberInstance> res.locals.auth_member
+            const member = Middleware.getAuthMember(req)
 
             const result = await modelsFactory.surveyModel.create({
                 name: req.body.name, 
@@ -114,20 +83,22 @@ export function initSurveysController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(res.locals.survey) 
+        return res.json(Middleware.getSurvey(res)) 
     })
 
     app.patch('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        checkSurveyAuth(Capability.Edit),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMemberSurvey,
+        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = <ModelTypes.SurveyInstance> res.locals.survey
+            const survey = Middleware.getSurvey(res)
 
             if (survey.name === req.body.name) {
                 return res.json(survey) 
@@ -142,13 +113,15 @@ export function initSurveysController(
     app.delete('/surveys/:survey_id', [
         Validator.param('survey_id').isInt({gt: 0}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        checkSurveyAuth(Capability.Delete),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMemberSurvey,
+        authMiddleware.verifyAuthMemberSurveyCapability(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = <ModelTypes.SurveyInstance> res.locals.survey
+            const survey = Middleware.getSurvey(res)
 
             await survey.destroy()
 

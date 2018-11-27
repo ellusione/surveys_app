@@ -4,7 +4,7 @@ export interface BaseAttributes {
     id?:number
 }
 
-type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes 
+export type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes 
 
 export function getInstanceId (instance: BaseInstance): number {
     if (!instance.id) {

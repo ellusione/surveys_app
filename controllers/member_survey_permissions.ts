@@ -3,12 +3,12 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import { isNullOrUndefined } from 'util';
 import Factory from '../models/factory'
-import * as ModelTypes from '../models'
 import ResourcesMiddleware from '../middleware/resources';
 import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
+
 
 export function initMemberSurveyPermissionController(
     app: Express.Express, 
@@ -16,34 +16,21 @@ export function initMemberSurveyPermissionController(
     resourcesMiddleware: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
-    function checkAuth (capability: Capability) {
-        return (req: Express.Request, res: Express.Response, next: Function) => {
-
-            return (async (): Bluebird<void> => {
-                switch (req.auth.type) {
-                    case 'member': {
-                        res.locals.auth_member = await authMiddleware.getAndCheckMemberSurveyAuth(req.auth, res.locals.survey, capability)
-                        return
-                    }
-
-                    default: throw new Errors.UnauthorizedError()
-                }
-            })().asCallback(next)
-        }
-    }
-
+    
     app.post('/surveys/:survey_id/member_permissions', [
         Validator.param('survey_id').isInt({gt: 0}),
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        checkAuth(Capability.Edit),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMemberSurvey,
+        authMiddleware.verifyAuthMemberCapability(Capability.Edit),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const survey = <ModelTypes.SurveyInstance> res.locals.survey
+            const survey = Middleware.getSurvey(res)
 
             const member = await modelsFactory.memberModel.findOne({
                 where: {
@@ -108,7 +95,9 @@ export function initMemberSurveyPermissionController(
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').optional().isInt({gt: 0, lt: Role.allRoles.size+1}),
         resourcesMiddleware.loadSurvey.bind(resourcesMiddleware),
-        checkAuth(Capability.Delete),
+        authMiddleware.setAuthMember,
+        authMiddleware.verifyMemberSurvey,
+        authMiddleware.verifyAuthMemberCapability(Capability.Delete),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

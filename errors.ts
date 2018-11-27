@@ -9,6 +9,16 @@ export abstract class BaseError extends Error {
     }
 }
 
+export class UnexpectedError extends BaseError {
+    name = 'UnexpectedError'
+    statusCode = 500
+
+    constructor (message: string) {
+        super(message)
+        Object.setPrototypeOf(this, BadRequestError.prototype);
+    }
+}
+
 export class BadRequestError extends BaseError {
     name = 'BadRequestError'
     statusCode = 400 

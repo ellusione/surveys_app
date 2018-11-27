@@ -302,3 +302,36 @@ export async function truncateAllModels (modelsFactory: ModelsFactory) {
             if (!organization) {
                 throw new Errors.NotFoundError('Organization not found')
             }
+
+
+// declare class LocalResources{}
+declare interface TExpress extends Express.Express {
+    Request: TRequest,
+    Response: TResponse
+ }
+
+declare interface TRequest extends Express.Request {
+    auth: Auth
+}
+
+declare interface TResponse extends Express.Response{
+        customLocals: LocalResources<ModelTypes.BaseInstance>
+}
+
+ LocalResources {
+        resource: ModelTypes.BaseInstance
+        authMember: MemberAuth
+        constructor (instance: ModelTypes.BaseInstance, authMember: MemberAuth) {
+            this.resource = instance
+            this.authMember = authMember
+        }
+    }
+
+
+class MemberSurveyPermissionsLocalResources implements LocalResources {
+    resource: ModelTypes.MemberInstance
+
+    constructor(resource: ModelTypes.MemberInstance) {
+        this.resource = resource
+    }
+}

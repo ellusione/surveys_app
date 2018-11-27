@@ -3,7 +3,6 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as bcrypt from 'bcryptjs'
 import Factory from '../models/factory'
-import * as ModelTypes from '../models'
 import ResourcesMiddleware from '../middleware/resources';
 import AuthMiddleware from '../middleware/auth';
 import * as Middleware from '../middleware'
@@ -17,30 +16,6 @@ export function initUsersController(
     resourcesMiddleware: ResourcesMiddleware, 
     authMiddleware: AuthMiddleware
 ) {
-    function checkAuth (capability: Capability) {
-        return (req: Express.Request, res: Express.Response, next: Function) => {
-
-            return (async (): Bluebird<void> => {
-                switch (req.auth.type) {
-                    case 'user': {
-                        if (req.auth.id !== res.locals.user.id) {
-                            throw new Errors.UnauthorizedError()
-                        }
-                        return
-                    }
-
-                    case 'member': {
-                        if (req.auth.id !== res.locals.user.id) {
-                            await authMiddleware.getAndCheckMemberAuth(req.auth, capability)
-                        }
-                        return
-                    }
-
-                    default: throw new Errors.UnauthorizedError()
-                }
-            })().asCallback(next)
-        }
-    }
 
     app.post('/users', [
         Validator.body('name').isString(),
@@ -87,20 +62,21 @@ export function initUsersController(
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
-        return res.json(res.locals.user)
+        return res.json(Middleware.getUser(res))
     })
 
     app.patch('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         resourcesMiddleware.loadUser.bind(resourcesMiddleware),
-        checkAuth(Capability.Edit),
+        authMiddleware.setEitherAuth.bind(authMiddleware),
+        authMiddleware.verifyEitherAuth(Capability.Edit).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = <ModelTypes.UserInstance> res.locals.user
+            const user = Middleware.getUser(res)
 
             if (user.name === req.body.name) {
                 return res.json(user) 
@@ -115,13 +91,14 @@ export function initUsersController(
     app.delete('/users/:user_id', [
         Validator.param('user_id').isInt({gt: 0}),
         resourcesMiddleware.loadUser.bind(resourcesMiddleware),
-        checkAuth(Capability.Delete),
+        authMiddleware.setEitherAuth.bind(authMiddleware),
+        authMiddleware.verifyEitherAuth(Capability.Delete).bind(authMiddleware),
         Middleware.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
         
         return (async (): Bluebird<Express.Response> => {
-            const user = <ModelTypes.UserInstance> res.locals.user
+            const user = Middleware.getUser(res)
 
             await user.destroy()
            
