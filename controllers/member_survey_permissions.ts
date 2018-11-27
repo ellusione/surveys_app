@@ -21,7 +21,7 @@ export function initMemberSurveyPermissionController(
         middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -94,7 +94,7 @@ export function initMemberSurveyPermissionController(
         middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Delete).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

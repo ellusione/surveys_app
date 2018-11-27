@@ -18,7 +18,7 @@ export function initMembersController(
         Validator.body('user_id').isInt({gt: 0}),
         Validator.body('role_id').isInt({gt: 0, lt: Role.allRoles.size+1}),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Create).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Create).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -99,7 +99,7 @@ export function initMembersController(
         middleware.LoadResource.loadMember.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyAccessOfMember,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -122,7 +122,7 @@ export function initMembersController(
         middleware.LoadResource.loadMember.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyAccessOfMember,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Delete).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

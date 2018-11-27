@@ -16,7 +16,7 @@ export function initSurveysController(
     app.post('/surveys', [
         Validator.body('name').isString(),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Create).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Create).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -89,7 +89,7 @@ export function initSurveysController(
         middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyAuthMemberSurveyCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMemberSurvey(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -112,7 +112,7 @@ export function initSurveysController(
         middleware.LoadResource.loadSurvey.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfSurvey,
-        middleware.VerifyAuthCapability.verifyAuthMemberSurveyCapability(Capability.Delete).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMemberSurvey(Capability.Delete).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

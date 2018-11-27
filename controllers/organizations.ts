@@ -70,7 +70,7 @@ export function initOrganizationsController(
         middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Edit).bind(middleware.VerifyAuthCapability),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Edit).bind(middleware.VerifyAuthCapability),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -93,7 +93,7 @@ export function initOrganizationsController(
         middleware.LoadResource.loadOrganization.bind(middleware.LoadResource),
         middleware.SetAuth.setAuthMember.bind(middleware.SetAuth),
         Middleware.VerifyAuthAccess.verifyMemberAccessOfOrganization,
-        middleware.VerifyAuthCapability.verifyAuthMemberCapability(Capability.Delete),
+        middleware.VerifyAuthCapability.verifyMember(Capability.Delete),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {

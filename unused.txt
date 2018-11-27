@@ -351,7 +351,7 @@ class MemberSurveyPermissionsLocalResource implements LocalResource {
             }
 
             if (requestedUser.id !== member.user_id) {
-                return this.verifyAuthMemberCapability(capability)(req, res, next)
+                return this.verifyMember(capability)(req, res, next)
             }
             return next()
         }

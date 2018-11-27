@@ -13,7 +13,7 @@ export default class VerifyAuthCapability {
         this.modelsFactory = modelsFactory
     }
 
-    verifyAuthMemberCapability(capability: Capability) {
+    verifyMember(capability: Capability) {
         return (
             req: Express.Request, res: Express.Response, next: Function
         ) => {
@@ -24,7 +24,7 @@ export default class VerifyAuthCapability {
         }
     }
 
-    verifyAuthMemberSurveyCapability(capability: Capability) {
+    verifyMemberSurvey(capability: Capability) {
         return (
             req: Express.Request, res: Express.Response, next: Function
         ) => {
