@@ -17,6 +17,7 @@ export function initUsersController(
         Validator.body('name').isString(),
         Validator.body('username').isString(),
         Validator.body('password').isString(),
+        Validator.body('email').isString(),
         Middleware.Base.validationErrorHandlingFn  
     ],
     (req: Express.Request, res: Express.Response, next: Function) => {
@@ -25,7 +26,8 @@ export function initUsersController(
             const result = await modelsFactory.userModel.create({
                 name: req.body.name,
                 username: req.body.username,
-                password: bcrypt.hashSync(req.body.password, 8)
+                password: bcrypt.hashSync(req.body.password, 8),
+                email: req.body.email
             })
 
             return res.json(result) //todo: do not send password and username
@@ -68,7 +70,7 @@ export function initUsersController(
         return res.json(user)
     })
 
-    app.patch('/users/:user_id', [
+    app.patch('/users/:user_id', [ //todo patch username, password, email
         Validator.param('user_id').isInt({gt: 0}),
         Validator.body('name').isString(),
         middleware.resourceLoader.loadUser.bind(middleware.resourceLoader),

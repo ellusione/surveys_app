@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+//import lodash from 'lodash'
 import * as  OrganizationDefinition from '../organization/definition';
 import * as UserDefinition from '../user/definition'
 import {Role} from '../../roles'
@@ -34,6 +35,12 @@ const sequelizeAttributes = {
 }
 
 export default (sequelize: Sequelize.Sequelize) => {
+    // const options = lodash.merge({}, dbOptions, {
+    //     indexes: [
+    //         {fields: ['user_id', 'organization_id', 'deleted_at'], unique: true}
+    //     ]
+    // })
+
     const model = sequelize.define<Definition.MemberInstance, Definition.MemberAttributes>(
         Definition.memberTableName, sequelizeAttributes, dbOptions
     )

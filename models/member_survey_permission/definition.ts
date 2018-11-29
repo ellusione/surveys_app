@@ -17,3 +17,18 @@ export interface MemberSurveyPermissionAttributes extends BaseAttributes {
 }
 
 export type MemberSurveyPermissionInstance = Sequelize.Instance<MemberSurveyPermissionAttributes> & MemberSurveyPermissionAttributes
+
+export const memberSurveyPermissionStatement = `CREATE TABLE member_survey_permissions (
+    id SERIAL PRIMARY KEY,
+    user_id integer NOT NULL,
+    survey_id integer NOT NULL,
+    role_id integer NOT NULL,
+    created_at timestamp with time zone NOT NULL DEFAULT now(),
+    updated_at timestamp with time zone NOT NULL,
+    deleted_at timestamp with time zone,
+    CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT survey_id_fkey FOREIGN KEY (survey_id) REFERENCES surveys(id),
+    UNIQUE INDEX user_survey
+    ON users(user_id, survey_id)
+    WHERE deleted_at IS NOT NULL
+)`

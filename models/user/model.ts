@@ -9,11 +9,12 @@ import * as Definition from './definition'
 const sequelizeAttributes = {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: Sequelize.STRING, allowNull: false },
-    username: { type: Sequelize.STRING, allowNull: false, unique: 'uniq_username' }, //hide from response
+    username: { type: Sequelize.STRING, allowNull: false, unique: 'uniq_username' },
     password: { type: Sequelize.STRING, allowNull: false },
+    email: { type: Sequelize.STRING, allowNull: false},
     created_at: Sequelize.DATE,
     updated_at: Sequelize.DATE,
-    deleted_at: {type: Sequelize.DATE, unique: 'uniq_username' }
+    deleted_at: {type: Sequelize.DATE, unique: 'uniq_username'}
 }
 
 export default (
@@ -22,13 +23,17 @@ export default (
 ) => {
     const options = lodash.merge({}, dbOptions, {
         defaultScope: {
-            attributes: { exclude: ['password', 'username'] }
+            attributes: { exclude: ['password', 'username', 'email'] }
         },
         scopes: {
             withCredentials: {
                 attributes: { include: ['password', 'username'] }
             }
         },
+        // indexes: [
+        //     {fields: ['username', 'deleted_at'], unique: true},
+        //     {fields: ['email', 'deleted_at'], unqiue: true}
+        // ],
         hooks: {
             //change creator of survey also?
             afterDestroy: (user: Definition.UserInstance) => {

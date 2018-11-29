@@ -9,11 +9,11 @@ const promisifedRequest = bluebird.Promise.promisify(request)
 
 export type Instance = {id: number}
 
-export async function createUser (name: string, username: string, password: string) {
+export async function createUser (name: string, username: string, password: string, email: string) {
     const res = await promisifedRequest({
         url:'http://localhost:3000/users',
         method: 'POST',
-        body: {name, username, password},
+        body: {name, username, password, email},
         json: true
     })
     expect(res.statusCode).to.equal(200)

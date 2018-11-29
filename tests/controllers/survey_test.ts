@@ -16,11 +16,12 @@ describe('Survey test', () => {
     const promisifedRequest = bluebird.Promise.promisify(request)
     const username = 'bq23'
     const password = 'cddsw'  
+    const email = 'uniq'
     let modelsFactory: Factory
     let memberInfo: MemberInfo
 
-    async function createMember (username: string, password: string) {
-        const user = await Helper.createUser('a', username, password)
+    async function createMember (username: string, password: string, email: string) {
+        const user = await Helper.createUser('a', username, password, email)
         const userToken = await Helper.createUserToken(username, password)
         const organization = await Helper.createOrganization(userToken)
         const memberToken = await Helper.createMemberToken(organization.id, userToken)
@@ -28,8 +29,8 @@ describe('Survey test', () => {
         return {user, memberToken, organization}
     }
 
-    async function createLessPrivelegedMember (username: string, password: string, authMemberToken: string, role: Role = memberRole) {
-        const user = await Helper.createUser('b', username, password)
+    async function createLessPrivelegedMember (username: string, password: string, email: string, authMemberToken: string, role: Role = memberRole) {
+        const user = await Helper.createUser('b', username, password, email)
         const userToken = await Helper.createUserToken(username, password)
 
         const member = await Helper.createMember(user.id, role, authMemberToken)
@@ -51,7 +52,7 @@ describe('Survey test', () => {
     })
 
     beforeEach('create privileged member', async () => {
-        memberInfo = await createMember(username, password)
+        memberInfo = await createMember(username, password, email)
     })
 
     describe('Create survey', () => {
@@ -88,7 +89,7 @@ describe('Survey test', () => {
         })
 
         it('Survey creation errors for unprivileged member', async () => {
-            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, memberInfo.memberToken)
+            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, email+'a', memberInfo.memberToken)
 
             const res = await promisifedRequest({
                 url:'http://localhost:3000/surveys',
@@ -135,7 +136,7 @@ describe('Survey test', () => {
         let otherMemberInfo: MemberInfo
 
         beforeEach('create member of other org', async () => {
-            otherMemberInfo = await createMember(username+'c', password)
+            otherMemberInfo = await createMember(username+'c', password, email+'c')
         })
 
         beforeEach(async () => {
@@ -285,7 +286,7 @@ describe('Survey test', () => {
         })
 
         it('Error on updating survey with unpriveleged member', async () => {
-            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, memberInfo.memberToken)
+            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, email+'a', memberInfo.memberToken)
             
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${survey.id}`,
@@ -358,7 +359,7 @@ describe('Survey test', () => {
         })
 
         it('Error on deleting survey with unpriveleged member', async () => {
-            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, memberInfo.memberToken)
+            const unprivilegedMemberInfo = await createLessPrivelegedMember(username+'a', password, email+'a', memberInfo.memberToken)
             
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${survey.id}`,
@@ -369,7 +370,7 @@ describe('Survey test', () => {
         })
 
         it('Error on deleting survey with less priveleged member', async () => {
-            const otherMemberInfo = await createLessPrivelegedMember(username+'c', password, memberInfo.memberToken, adminRole)
+            const otherMemberInfo = await createLessPrivelegedMember(username+'c', password, email+'c', memberInfo.memberToken, adminRole)
             
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${survey.id}`,
@@ -380,7 +381,7 @@ describe('Survey test', () => {
         })
 
         it('Error on deleting survey with non-member', async () => {
-            const otherMemberInfo = await createMember(username+'c', password)
+            const otherMemberInfo = await createMember(username+'c', password, email+'c')
             
             const res = await promisifedRequest({
                 url:`http://localhost:3000/surveys/${survey.id}`,

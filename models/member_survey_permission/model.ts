@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize'
+import lodash from 'lodash'
 import * as  SurveyDefinition from '../survey/definition';
 import * as UserDefinition from '../user/definition'
 import {Role} from '../../roles'
@@ -10,29 +11,33 @@ const sequelizeAttributes = {
     user_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: UserDefinition.userTableName, key: 'id' },
-        unique: 'unq_user_survey_role'
+        references: {model: UserDefinition.userTableName, key: 'id' }
     },
     survey_id: {
         type: Sequelize.INTEGER, 
         allowNull: false, 
-        references: {model: SurveyDefinition.surveyTableName, key: 'id' },
-        unique: 'unq_user_survey_role'
+        references: {model: SurveyDefinition.surveyTableName, key: 'id' }
     },
     role_id: {
         type: Sequelize.INTEGER, 
         allowNull: false,
-        validate: {min: 1, max: Role.allRoles.size},
-        unique: 'unq_user_survey_role'
+        validate: {min: 1, max: Role.allRoles.size}
     },
     created_at: Sequelize.DATE,
     updated_at: Sequelize.DATE,
-    deleted_at: {type: Sequelize.DATE, unique: 'unq_user_survey_role' }
+    deleted_at: Sequelize.DATE
 }
 
 export default (sequelize: Sequelize.Sequelize) => {
+
+    const options = lodash.merge({}, dbOptions, {
+        indexes: [
+            {fields: ['user_id', 'survey_id', 'deleted_at'], unique: true}
+        ]
+    })
+    
     const model = sequelize.define<Definition.MemberSurveyPermissionInstance, Definition.MemberSurveyPermissionAttributes>(
-        Definition.memberSurveyPermissionTableName , sequelizeAttributes, dbOptions
+        Definition.memberSurveyPermissionTableName , sequelizeAttributes, options
     )
 
     model.associate = models => {

@@ -13,6 +13,7 @@ describe('User test', () => {
     const promisifedRequest = bluebird.Promise.promisify(request)
     const username = 'bq23'
     const password = 'cddsw'  
+    const email = 'c'
     let modelsFactory: Factory
 
     before('Init db and server with routes', async () => {
@@ -29,7 +30,7 @@ describe('User test', () => {
             const res = await promisifedRequest({
                 url:'http://localhost:3000/users',
                 method: 'POST',
-                body: {'name_false': 'a', username, password},
+                body: {'name_false': 'a', username, password, email},
                 json: true
             })
 
@@ -41,7 +42,7 @@ describe('User test', () => {
         })
 
         it('User created with proper req body', async () => {
-            const user = await Helper.createUser('a', username, password)
+            const user = await Helper.createUser('a', username, password, email)
 
             expect(user.created_at).to.exist
             expect(user.updated_at).to.exist
@@ -55,7 +56,7 @@ describe('User test', () => {
         let user: Helper.Instance
 
         beforeEach(async () => {
-            user = await Helper.createUser('a', username, password)
+            user = await Helper.createUser('a', username, password, email)
         })
 
         it('Successfully find the user', async () => {
@@ -85,9 +86,9 @@ describe('User test', () => {
 
         beforeEach(async () => {
             users = []
-            users.push(await Helper.createUser('a', username, password))
-            users.push(await Helper.createUser('b', username+'b', password))
-            users.push(await Helper.createUser('c', username+'c', password))
+            users.push(await Helper.createUser('a', username, password, email+'a'))
+            users.push(await Helper.createUser('b', username+'b', password, email+'b'))
+            users.push(await Helper.createUser('c', username+'c', password, email+'c'))
         })
 
         it('Successfully find the users', async () => {
@@ -142,7 +143,7 @@ describe('User test', () => {
         let userToken: string
 
         beforeEach(async () => {
-            user = await Helper.createUser('a', username, password)
+            user = await Helper.createUser('a', username, password, email)
         })
 
         beforeEach(async () => {
@@ -182,7 +183,7 @@ describe('User test', () => {
         })
 
         it('Error when the token belongs to the wrong user', async () => {
-            await Helper.createUser('c', username+'c', password)
+            await Helper.createUser('c', username+'c', password, email+'c')
             const otherUserToken = await Helper.createUserToken(username+'c', password)
 
             const res = await promisifedRequest({
@@ -227,7 +228,7 @@ describe('User test', () => {
         let userToken: string
 
         beforeEach(async () => {
-            user = await Helper.createUser('a', username, password)
+            user = await Helper.createUser('a', username, password, email)
         })
 
         beforeEach(async () => {
@@ -258,7 +259,7 @@ describe('User test', () => {
         })
 
         it('Error when the token belongs to the wrong user', async () => {
-            await Helper.createUser('c', username+'c', password)
+            await Helper.createUser('c', username+'c', password, email+'c')
             const otherUserToken = await Helper.createUserToken(username+'c', password)
 
             const res = await promisifedRequest({
