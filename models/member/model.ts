@@ -7,7 +7,6 @@ import {dbOptions} from '../helpers';
 import * as Definition from './definition'
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS members`,
     create: `CREATE TABLE members (
         id SERIAL PRIMARY KEY,
         user_id integer NOT NULL,
@@ -18,13 +17,9 @@ const sqlStatements: SQL = {
         deleted_at timestamp with time zone
     )`,
     constraints: [
-        `CREATE CONSTRAINT user_id_fkey FOREIGN KEY members(user_id) REFERENCES users(id)`,
-        `CREATE CONSTRAINT organization_id_fkey FOREIGN KEY members(organization_id) REFERENCES organizations(id)`,
-        `CREATE UNIQUE INDEX user_organization ON members(user_id, organization_id) WHERE deleted_at IS NOT NULL`
-    ],
-    dropForeignConstraints: [
-        `ALTER TABLE IF EXISTS members DROP CONSTRAINT IF EXISTS user_id_fkey`,
-        `ALTER TABLE IF EXISTS members DROP CONSTRAINT IF EXISTS organization_id_fkey`
+        `ALTER TABLE members ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`,
+        `ALTER TABLE members ADD CONSTRAINT organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id)`,
+        `CREATE UNIQUE INDEX uniq_user_organization ON members (user_id, organization_id) WHERE deleted_at IS NULL`
     ]
 }
 

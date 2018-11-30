@@ -7,7 +7,6 @@ import * as Definition from './definition'
 import {dbOptions} from '../helpers';
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS member_survey_permissions`,
     create: `CREATE TABLE member_survey_permissions (
         id SERIAL PRIMARY KEY,
         user_id integer NOT NULL,
@@ -18,13 +17,9 @@ const sqlStatements: SQL = {
         deleted_at timestamp with time zone
     )`,
     constraints: [
-        `CREATE CONSTRAINT user_id_fkey FOREIGN KEY member_survey_permissions(user_id) REFERENCES users(id)`,
-        `CREATE CONSTRAINT survey_id_fkey FOREIGN KEY member_survey_permissions(survey_id) REFERENCES surveys(id)`,
-        `CREATE UNIQUE INDEX user_survey ON member_survey_permissions(user_id, survey_id) WHERE deleted_at IS NOT NULL`
-    ],
-    dropForeignConstraints: [
-        `ALTER TABLE IF EXISTS member_survey_permissions DROP CONSTRAINT IF EXISTS user_id_fkey`,
-        `ALTER TABLE IF EXISTS member_survey_permissions DROP CONSTRAINT IF EXISTS survey_id_fkey`
+        `ALTER TABLE member_survey_permissions ADD CONSTRAINT user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id)`,
+        `ALTER TABLE member_survey_permissions ADD CONSTRAINT survey_id_fkey FOREIGN KEY (survey_id) REFERENCES surveys(id)`,
+        `CREATE UNIQUE INDEX uniq_user_survey ON member_survey_permissions (user_id, survey_id) WHERE deleted_at IS NULL`
     ]
 }
 

@@ -19,14 +19,8 @@ describe('Survey test', () => {
     before('Init db', async () => {
         modelsFactory = await initDB()
         modelsFactory.userModel.truncate()
-        user = await modelsFactory.userModel.create({name: 'user a', username: 'wow', password: 'hash', email: 'a'})
-    //     console.log("USER",user)
-    //    user.destroy();
-    //     const user2 = await modelsFactory.userModel.findOrCreate({where: {name: 'user a', username: 'wow', password: 'hash', email: 'a'}})
-    //     console.log("USER2", user2)
-        
+        user = await modelsFactory.userModel.create({name: 'user a', username: 'wow', password: 'hash', email: 'ab'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
-        throw new Error()
     })
 
     beforeEach(async () => {

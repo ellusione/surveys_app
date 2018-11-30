@@ -8,7 +8,6 @@ import { dbOptions, getInstanceId } from '../helpers';
 import * as Definition from './definition'
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS users`,
     create: `CREATE TABLE users (
         id SERIAL PRIMARY KEY,
         name character varying(255) NOT NULL,
@@ -20,10 +19,9 @@ const sqlStatements: SQL = {
         deleted_at timestamp with time zone
     )`,
     constraints: [
-        `CREATE UNIQUE INDEX username ON users(username) WHERE deleted_at IS NOT NULL`,
-        `CREATE UNIQUE INDEX email ON users(email) WHERE deleted_at IS NOT NULL`
-    ],
-    dropForeignConstraints: []
+        `CREATE UNIQUE INDEX uniq_username ON users (username) WHERE deleted_at IS NULL`,
+        `CREATE UNIQUE INDEX uniq_email ON users (email) WHERE deleted_at IS NULL`
+    ]
 }
 
 const sequelizeAttributes = {
@@ -44,7 +42,7 @@ export default (
         },
         scopes: {
             withCredentials: {
-                attributes: { include: ['password', 'username'] }
+                attributes: { include: ['password', 'username', 'email'] }
             }
         },
         hooks: {

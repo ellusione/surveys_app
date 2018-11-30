@@ -47,14 +47,9 @@ export default async function initModels (sequelize: Sequelize.Sequelize): Promi
     const memberModelInfo = Member.default(sequelize)
     modelsInfo.push(memberModelInfo)
 
-    for (const info of modelsInfo) {
-        for (const dropConstraint of info.sqlStatements.dropForeignConstraints) {
-            await sequelize.query(dropConstraint)
-        }
-    }
+    await sequelize.drop()
 
     for (const info of modelsInfo) {
-        await sequelize.query(info.sqlStatements.drop)
         await sequelize.query(info.sqlStatements.create)
     }
 

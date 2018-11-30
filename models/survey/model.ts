@@ -9,7 +9,6 @@ import {dbOptions, getInstanceId} from '../helpers';
 import * as Definition from './definition'
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS surveys`,
     create: `CREATE TABLE surveys (
         id SERIAL PRIMARY KEY,
         name character varying(255) NOT NULL,
@@ -20,12 +19,8 @@ const sqlStatements: SQL = {
         deleted_at timestamp with time zone
     );`,
     constraints: [
-        `ALTER TABLE surveys CREATE CONSTRAINT creator_id_fkey FOREIGN KEY surveys(creator_id) REFERENCES users(id)`,
-        `ALTER TABLE surveys CREATE CONSTRAINT organization_id_fkey FOREIGN KEY surveys(organization_id) REFERENCES organizations(id)`
-    ],
-    dropForeignConstraints: [
-        `ALTER TABLE IF EXISTS surveys DROP CONSTRAINT IF EXISTS creator_id_fkey`,
-        `ALTER TABLE IF EXISTS surveys DROP CONSTRAINT IF EXISTS organization_id_fkey`
+        `ALTER TABLE surveys ADD CONSTRAINT creator_id_fkey FOREIGN KEY (creator_id) REFERENCES users(id)`,
+        `ALTER TABLE surveys ADD CONSTRAINT organization_id_fkey FOREIGN KEY (organization_id) REFERENCES organizations(id)`
     ]
 }
 

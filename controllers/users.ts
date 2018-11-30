@@ -23,14 +23,18 @@ export function initUsersController(
     (req: Express.Request, res: Express.Response, next: Function) => {
 
         return (async (): Bluebird<Express.Response> => {
-            const result = await modelsFactory.userModel.create({
+            const user = await modelsFactory.userModel.create({
                 name: req.body.name,
                 username: req.body.username,
                 password: bcrypt.hashSync(req.body.password, 8),
                 email: req.body.email
             })
 
-            return res.json(result) //todo: do not send password and username
+            const json = user.toJSON()
+            delete json.username
+            delete json.password
+            delete json.email
+            return res.json(json)
         })().asCallback(next)
     })
 

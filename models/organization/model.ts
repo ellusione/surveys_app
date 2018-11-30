@@ -8,7 +8,6 @@ import {dbOptions, getInstanceId} from '../helpers';
 import * as Definition from './definition'
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS organizations`,
     create: `CREATE TABLE organizations (
         id SERIAL PRIMARY KEY,
         name character varying(255) NOT NULL,
@@ -16,8 +15,7 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     )`,
-    constraints: [],
-    dropForeignConstraints: []
+    constraints: []
 }
 
 const sequelizeAttributes = {

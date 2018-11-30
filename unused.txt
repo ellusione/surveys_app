@@ -380,3 +380,5 @@ export async function initTables (
     await sequelize.query(sqlStatements.drop)
     await sequelize.query(sqlStatements.create)
 }
+
+export type ModelBuildingFn = (s: sequelize.Sequelize) => {model: sequelize.Model<BaseInstance, BaseAttributes>, sqlStatements: SQL}

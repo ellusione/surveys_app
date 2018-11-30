@@ -4,7 +4,6 @@ import {SQL} from '../helpers'
 import * as Definition from './definition'
 
 const sqlStatements: SQL = {
-    drop: `DROP TABLE IF EXISTS deletion_jobs`,
     create: `CREATE TABLE deletion_jobs (
         id SERIAL PRIMARY KEY,
         table_name character varying(255) NOT NULL,
@@ -14,8 +13,7 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     )`,
-    constraints: [],
-    dropForeignConstraints: []
+    constraints: []
 }
 
 const sequelizeAttributes = {
