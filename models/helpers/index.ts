@@ -10,7 +10,8 @@ export type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes
 export type SQL = {
     drop: string,
     create: string,
-    additionalConstraints: string[]
+    constraints: string[]
+    dropForeignConstraints: string[]
 }
 
 export type ModelBuildingFn = (s: sequelize.Sequelize) => {model: sequelize.Model<BaseInstance, BaseAttributes>, sqlStatements: SQL}

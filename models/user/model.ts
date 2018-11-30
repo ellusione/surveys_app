@@ -19,10 +19,11 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     )`,
-    additionalConstraints: [
+    constraints: [
         `CREATE UNIQUE INDEX username ON users(username) WHERE deleted_at IS NOT NULL`,
         `CREATE UNIQUE INDEX email ON users(email) WHERE deleted_at IS NOT NULL`
-    ]
+    ],
+    dropForeignConstraints: []
 }
 
 const sequelizeAttributes = {

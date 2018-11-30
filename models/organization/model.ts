@@ -16,7 +16,8 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     )`,
-    additionalConstraints: []
+    constraints: [],
+    dropForeignConstraints: []
 }
 
 const sequelizeAttributes = {

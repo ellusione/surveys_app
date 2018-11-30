@@ -36,27 +36,30 @@ export default async function initModels (sequelize: Sequelize.Sequelize): Promi
 
     const deletionJobModelInfo = DeletionJob.default(sequelize)
     modelsInfo.push(deletionJobModelInfo)
-    const memberSurveyPermissionModelInfo = MemberSurveyPermission.default(sequelize)
-    modelsInfo.push(memberSurveyPermissionModelInfo)
     const userModelInfo = User.default(sequelize, deletionJobModelInfo.model)
     modelsInfo.push(userModelInfo)
-    const organizationModelInfo = Organization.default(sequelize, deletionJobModelInfo.model)
-    modelsInfo.push(organizationModelInfo)
+    const memberSurveyPermissionModelInfo = MemberSurveyPermission.default(sequelize)
+    modelsInfo.push(memberSurveyPermissionModelInfo)
     const surveyModelInfo = Survey.default(sequelize, deletionJobModelInfo.model)
     modelsInfo.push(surveyModelInfo)
+    const organizationModelInfo = Organization.default(sequelize, deletionJobModelInfo.model)
+    modelsInfo.push(organizationModelInfo)
     const memberModelInfo = Member.default(sequelize)
     modelsInfo.push(memberModelInfo)
 
     for (const info of modelsInfo) {
-        await sequelize.query(info.sqlStatements.drop)
+        for (const dropConstraint of info.sqlStatements.dropForeignConstraints) {
+            await sequelize.query(dropConstraint)
+        }
     }
 
     for (const info of modelsInfo) {
+        await sequelize.query(info.sqlStatements.drop)
         await sequelize.query(info.sqlStatements.create)
     }
 
     for (const info of modelsInfo) {
-        for (const constraint of info.sqlStatements.additionalConstraints) {
+        for (const constraint of info.sqlStatements.constraints) {
             await sequelize.query(constraint)
         }
     }

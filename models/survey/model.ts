@@ -19,9 +19,13 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     );`,
-    additionalConstraints: [
-        `CREATE CONSTRAINT creator_id_fkey FOREIGN KEY surveys(creator_id) REFERENCES users(id)`,
-        `CREATE CONSTRAINT organization_id_fkey FOREIGN KEY surveys(organization_id) REFERENCES organizations(id)`
+    constraints: [
+        `ALTER TABLE surveys CREATE CONSTRAINT creator_id_fkey FOREIGN KEY surveys(creator_id) REFERENCES users(id)`,
+        `ALTER TABLE surveys CREATE CONSTRAINT organization_id_fkey FOREIGN KEY surveys(organization_id) REFERENCES organizations(id)`
+    ],
+    dropForeignConstraints: [
+        `ALTER TABLE IF EXISTS surveys DROP CONSTRAINT IF EXISTS creator_id_fkey`,
+        `ALTER TABLE IF EXISTS surveys DROP CONSTRAINT IF EXISTS organization_id_fkey`
     ]
 }
 

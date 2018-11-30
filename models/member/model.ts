@@ -17,10 +17,14 @@ const sqlStatements: SQL = {
         updated_at timestamp with time zone NOT NULL,
         deleted_at timestamp with time zone
     )`,
-    additionalConstraints: [
+    constraints: [
         `CREATE CONSTRAINT user_id_fkey FOREIGN KEY members(user_id) REFERENCES users(id)`,
         `CREATE CONSTRAINT organization_id_fkey FOREIGN KEY members(organization_id) REFERENCES organizations(id)`,
         `CREATE UNIQUE INDEX user_organization ON members(user_id, organization_id) WHERE deleted_at IS NOT NULL`
+    ],
+    dropForeignConstraints: [
+        `ALTER TABLE IF EXISTS members DROP CONSTRAINT IF EXISTS user_id_fkey`,
+        `ALTER TABLE IF EXISTS members DROP CONSTRAINT IF EXISTS organization_id_fkey`
     ]
 }
 
