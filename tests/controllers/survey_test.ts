@@ -4,7 +4,7 @@ import request from 'request'
 import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as Helper from './helper'
 import {Role, memberRole, adminRole} from '../../roles'
 
@@ -17,7 +17,7 @@ describe('Survey test', () => {
     const username = 'bq23'
     const password = 'cddsw'  
     const email = 'uniq'
-    let modelsFactory: Factory
+    let modelsFactory: Factory.Models
     let memberInfo: MemberInfo
 
     async function createMember (username: string, password: string, email: string) {

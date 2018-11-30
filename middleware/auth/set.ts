@@ -1,14 +1,14 @@
 
 import Bluebird from 'bluebird'
 import Express from 'express'
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as Errors from '../../errors'
 import jwt from 'jsonwebtoken'
 import * as config from '../../config'
 
 export default class AuthSetter {
-    modelsFactory: Factory
-    constructor (modelsFactory: Factory) {
+    modelsFactory: Factory.Models
+    constructor (modelsFactory: Factory.Models) {
         this.modelsFactory = modelsFactory
     }
 

@@ -1,13 +1,13 @@
 import Express from 'express';
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as ModelTypes from '../../models'
 import Bluebird from 'bluebird'
 import * as Errors from '../../errors'
 
 export default class ResourceLoader {
-    modelsFactory: Factory
+    modelsFactory: Factory.Models
 
-    constructor (modelsFactory: Factory) {
+    constructor (modelsFactory: Factory.Models) {
         this.modelsFactory = modelsFactory
     }
 

@@ -4,11 +4,11 @@ import {initUsersController} from './users'
 import {initMembersController} from './members'
 import {initOrganizationsController} from './organizations'
 import {initMemberSurveyPermissionController} from './member_survey_permissions'
-import Factory from '../models/factory'
+import * as Factory from '../models/factory'
 import { initTokensController } from './tokens';
 import * as Middleware from '../middleware';
 
-export function initRoutes (app: Express.Express, modelsFactory: Factory, middleware: Middleware.Middleware) {
+export function initRoutes (app: Express.Express, modelsFactory: Factory.Models, middleware: Middleware.Middleware) {
     initTokensController(app, modelsFactory, middleware)
     initSurveysController(app, modelsFactory, middleware)
     initUsersController(app, modelsFactory, middleware)

@@ -2,7 +2,7 @@ import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import { isNullOrUndefined } from 'util';
-import Factory from '../models/factory'
+import * as Factory from '../models/factory'
 import * as Middleware from '../middleware';
 import {Role, Capability} from '../roles'
 import * as Errors from '../errors'
@@ -10,7 +10,7 @@ import * as Errors from '../errors'
 
 export function initMemberSurveyPermissionController(
     app: Express.Express, 
-    modelsFactory: Factory, 
+    modelsFactory: Factory.Models, 
     middleware: Middleware.Middleware
 ) {
 

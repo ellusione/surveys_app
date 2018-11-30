@@ -1,17 +1,27 @@
 import Sequelize from 'sequelize'
 import lodash from 'lodash'
+import {SQL} from '../helpers'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as SurveyDefinition from '../survey/definition'
 import {dbOptions, getInstanceId} from '../helpers';
 import * as Definition from './definition'
 
+const sqlStatements: SQL = {
+    drop: `DROP TABLE IF EXISTS organizations`,
+    create: `CREATE TABLE organizations (
+        id SERIAL PRIMARY KEY,
+        name character varying(255) NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL,
+        deleted_at timestamp with time zone
+    )`,
+    additionalConstraints: []
+}
+
 const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: Sequelize.STRING, allowNull: false},
-    created_at: Sequelize.DATE,
-    updated_at: Sequelize.DATE,
-    deleted_at: Sequelize.DATE
+    name: {type: Sequelize.STRING, allowNull: false}
 }
 
 export default (
@@ -47,5 +57,5 @@ export default (
         model.hasMany(models.Surveys)
     }
 
-    return model
+    return {model, sqlStatements}
 }

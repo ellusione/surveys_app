@@ -2,7 +2,7 @@
 import ResourceLoader from '../middleware/resource/load';
 import AuthSetter from '../middleware/auth/set';
 import AuthCapability from './auth/capability';
-import Factory from '../models/factory'
+import * as Factory from '../models/factory'
 
 export {Resource} from '../middleware/resource/get';
 export {Auth} from '../middleware/auth/get';
@@ -15,7 +15,7 @@ export class Middleware {
     authSetter: AuthSetter
     authCapability: AuthCapability
     
-    constructor (modelsFactory: Factory) {
+    constructor (modelsFactory: Factory.Models) {
         this.resourceLoader = new ResourceLoader(modelsFactory)
 
         this.authSetter = new AuthSetter(modelsFactory)

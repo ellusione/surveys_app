@@ -3,14 +3,14 @@ import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
 import * as jwt from 'jsonwebtoken'
 import * as bcrypt from 'bcryptjs'
-import Factory from '../models/factory'
+import * as Factory from '../models/factory'
 import * as Errors from '../errors'
 import * as Middleware from '../middleware';
 import * as config from '../config'
 
 export function initTokensController(
     app: Express.Express, 
-    modelsFactory: Factory, 
+    modelsFactory: Factory.Models, 
     middleware: Middleware.Middleware
 ) {
 

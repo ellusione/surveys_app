@@ -1,10 +1,19 @@
 import Sequelize from 'sequelize'
+import sequelize = require('sequelize');
 
 export interface BaseAttributes {
     id?:number
 }
 
 export type BaseInstance = Sequelize.Instance<BaseAttributes> & BaseAttributes 
+
+export type SQL = {
+    drop: string,
+    create: string,
+    additionalConstraints: string[]
+}
+
+export type ModelBuildingFn = (s: sequelize.Sequelize) => {model: sequelize.Model<BaseInstance, BaseAttributes>, sqlStatements: SQL}
 
 export function getInstanceId (instance: BaseInstance): number {
     if (!instance.id) {

@@ -261,7 +261,7 @@ static getStatusCode () {
     }
 
 
-export async function truncateAllModels (modelsFactory: ModelsFactory) {
+export async function truncateAllModels (modelsFactory: ModelsFactory.Models) {
     await modelsFactory.userModel.truncate()
     await modelsFactory.surveyModel.truncate()
     await modelsFactory.memberModel.truncate()
@@ -367,3 +367,16 @@ export async function initAll () {
    static asAsync (next: Function, fn: () => Bluebird<Express.Response>) {
         return fn().asCallback(next)
     }
+
+
+    await sequelize.query(sqlStatements.drop)
+    await sequelize.query(sqlStatements.create)
+
+
+export async function initTables (
+    sequelize: Sequelize.Sequelize, 
+    sqlStatements: {drop: string, create: string}
+) {
+    await sequelize.query(sqlStatements.drop)
+    await sequelize.query(sqlStatements.create)
+}

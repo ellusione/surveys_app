@@ -1,15 +1,15 @@
 
 import Bluebird from 'bluebird'
 import Express from 'express'
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as Errors from '../../errors'
 import {Role, Capability} from '../../roles'
 import {Auth} from './get'
 import {Resource} from '../resource/get'
 
 export default class AuthCapability {
-    modelsFactory: Factory
-    constructor (modelsFactory: Factory) {
+    modelsFactory: Factory.Models
+    constructor (modelsFactory: Factory.Models) {
         this.modelsFactory = modelsFactory
     }
 

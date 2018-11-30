@@ -1,11 +1,29 @@
 import Sequelize from 'sequelize'
 import lodash from 'lodash'
+import {SQL} from '../helpers'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as UserDefinition from '../user/definition'
 import * as OrganizationDefinition from '../organization/definition';
 import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
 import {dbOptions, getInstanceId} from '../helpers';
 import * as Definition from './definition'
+
+const sqlStatements: SQL = {
+    drop: `DROP TABLE IF EXISTS surveys`,
+    create: `CREATE TABLE surveys (
+        id SERIAL PRIMARY KEY,
+        name character varying(255) NOT NULL,
+        creator_id integer NOT NULL,
+        organization_id integer NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL,
+        deleted_at timestamp with time zone
+    );`,
+    additionalConstraints: [
+        `CREATE CONSTRAINT creator_id_fkey FOREIGN KEY surveys(creator_id) REFERENCES users(id)`,
+        `CREATE CONSTRAINT organization_id_fkey FOREIGN KEY surveys(organization_id) REFERENCES organizations(id)`
+    ]
+}
 
 export const sequelizeAttributes = {
     id: {type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true},
@@ -23,10 +41,7 @@ export const sequelizeAttributes = {
         references: {
             model: OrganizationDefinition.organizationTableName, key: 'id' 
         }
-    },
-    created_at: Sequelize.DATE,
-    updated_at: Sequelize.DATE,
-    deleted_at: Sequelize.DATE
+    }
 }
 
 export default (
@@ -60,5 +75,5 @@ export default (
         model.hasMany(models.member_survey_permissions)
     }
 
-    return model
+    return {model, sqlStatements}
 }

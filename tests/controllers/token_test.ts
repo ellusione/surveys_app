@@ -4,7 +4,7 @@ import request from 'request'
 import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import uuid = require('uuid');
 import * as Helper from './helper'
 
@@ -14,7 +14,7 @@ describe('Token test', () => {
     const promisifedRequest = bluebird.Promise.promisify(request)
     const username = 'b'
     const password = 'c'    
-    let modelsFactory: Factory
+    let modelsFactory: Factory.Models
 
     before('Init db and server with routes', async () => {
         modelsFactory = await initDB()
@@ -28,7 +28,7 @@ describe('Token test', () => {
     })
 
     beforeEach(async () => {
-        await Helper.createUser('a', username, password)
+        await Helper.createUser('a', username, password, 'email')
     })
 
     describe('Create user token', () => {

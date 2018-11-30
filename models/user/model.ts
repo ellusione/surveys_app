@@ -1,20 +1,36 @@
 import Sequelize from 'sequelize'
 import lodash from 'lodash'
+import {SQL} from '../helpers'
 import * as DeletionJobDefinition from '../deletion_job/definition'
 import * as MemberDefinition from '../member/definition'
 import * as MemberSurveyPermissionDefinition from '../member_survey_permission/definition'
 import { dbOptions, getInstanceId } from '../helpers';
 import * as Definition from './definition'
 
+const sqlStatements: SQL = {
+    drop: `DROP TABLE IF EXISTS users`,
+    create: `CREATE TABLE users (
+        id SERIAL PRIMARY KEY,
+        name character varying(255) NOT NULL,
+        username character varying(255) NOT NULL,
+        password character varying(255) NOT NULL,
+        email character varying(255) NOT NULL,
+        created_at timestamp with time zone NOT NULL DEFAULT now(),
+        updated_at timestamp with time zone NOT NULL,
+        deleted_at timestamp with time zone
+    )`,
+    additionalConstraints: [
+        `CREATE UNIQUE INDEX username ON users(username) WHERE deleted_at IS NOT NULL`,
+        `CREATE UNIQUE INDEX email ON users(email) WHERE deleted_at IS NOT NULL`
+    ]
+}
+
 const sequelizeAttributes = {
     id: { type: Sequelize.INTEGER, primaryKey: true, autoIncrement: true },
     name: { type: Sequelize.STRING, allowNull: false },
-    username: { type: Sequelize.STRING, allowNull: false, unique: 'uniq_username' },
+    username: { type: Sequelize.STRING, allowNull: false },
     password: { type: Sequelize.STRING, allowNull: false },
-    email: { type: Sequelize.STRING, allowNull: false},
-    created_at: Sequelize.DATE,
-    updated_at: Sequelize.DATE,
-    deleted_at: {type: Sequelize.DATE, unique: 'uniq_username'}
+    email: { type: Sequelize.STRING, allowNull: false}
 }
 
 export default (
@@ -30,10 +46,6 @@ export default (
                 attributes: { include: ['password', 'username'] }
             }
         },
-        // indexes: [
-        //     {fields: ['username', 'deleted_at'], unique: true},
-        //     {fields: ['email', 'deleted_at'], unqiue: true}
-        // ],
         hooks: {
             //change creator of survey also?
             afterDestroy: (user: Definition.UserInstance) => {
@@ -63,5 +75,5 @@ export default (
         model.hasMany(models.Surveys)
     }
 
-    return model
+    return {model, sqlStatements}
 }

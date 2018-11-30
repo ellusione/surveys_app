@@ -1,7 +1,7 @@
 import * as chai from 'chai'
 import * as uuid from 'uuid'
 chai.use(require('chai-as-promised'))
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as ModelTypes from '../../models'
 import * as MemberSurveyPermissionDefinition from '../../models/member_survey_permission/definition'
 import {getInstanceId} from '../../models/helpers'
@@ -11,7 +11,7 @@ const expect = chai.expect
 
 describe('Survey test', () => {
 
-    let modelsFactory: Factory
+    let modelsFactory: Factory.Models
     let user: ModelTypes.UserInstance
     let organization: ModelTypes.OrganizationInstance
     let survey: ModelTypes.SurveyInstance
@@ -20,10 +20,10 @@ describe('Survey test', () => {
         modelsFactory = await initDB()
         modelsFactory.userModel.truncate()
         user = await modelsFactory.userModel.create({name: 'user a', username: 'wow', password: 'hash', email: 'a'})
-        console.log("USER",user)
-       user.destroy();
-        const user2 = await modelsFactory.userModel.findOrCreate({where: {name: 'user a', username: 'wow', password: 'hash', email: 'a'}})
-        console.log("USER2", user2)
+    //     console.log("USER",user)
+    //    user.destroy();
+    //     const user2 = await modelsFactory.userModel.findOrCreate({where: {name: 'user a', username: 'wow', password: 'hash', email: 'a'}})
+    //     console.log("USER2", user2)
         
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
         throw new Error()

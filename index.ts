@@ -2,16 +2,16 @@ import Express from 'express';
 import Http from 'http';
 import {initRoutes} from './controllers'
 import {initDB} from './database'
-import Factory from './models/factory'
+import * as Factory from './models/factory'
 import * as Middleware from './middleware/'
 
 const port = process.env.PORT || 3000
 
-let models: Factory
+let models: Factory.Models
 let app: Express.Express
 let server: Http.Server
 
-export async function init(modelsFactory: Factory) {
+export async function init(modelsFactory: Factory.Models) {
 
     models = modelsFactory
 

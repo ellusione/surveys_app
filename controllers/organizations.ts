@@ -1,7 +1,7 @@
 import Express from 'express';
 import Validator from 'express-validator/check'
 import Bluebird from 'bluebird'
-import Factory from '../models/factory'
+import * as Factory from '../models/factory'
 import * as ModelTypes from '../models'
 import * as Middleware from '../middleware';
 import { isNullOrUndefined } from 'util';
@@ -9,7 +9,7 @@ import {Capability, managerRole} from '../roles'
 
 export function initOrganizationsController(
     app: Express.Express, 
-    modelsFactory: Factory, 
+    modelsFactory: Factory.Models, 
     middleware: Middleware.Middleware
 ) {
     

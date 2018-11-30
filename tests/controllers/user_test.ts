@@ -4,7 +4,7 @@ import request from 'request'
 import bluebird from 'bluebird'
 import {init} from '../../index'
 import {initDB} from '../../database'
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as Helper from './helper'
 
 const expect = chai.expect
@@ -14,7 +14,7 @@ describe('User test', () => {
     const username = 'bq23'
     const password = 'cddsw'  
     const email = 'c'
-    let modelsFactory: Factory
+    let modelsFactory: Factory.Models
 
     before('Init db and server with routes', async () => {
         modelsFactory = await initDB()

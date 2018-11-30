@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Factory from '../../models/factory'
+import * as Factory from '../../models/factory'
 import * as ModelTypes from '../../models'
 import {getInstanceId} from '../../models/helpers'
 import {initDB} from '../../database'
@@ -8,7 +8,7 @@ import {getDeletionRunnerFn} from '../../job'
 
 describe('Job test', () => {
 
-    let modelsFactory: Factory
+    let modelsFactory: Factory.Models
     let deletionRunnerFn: Function
     let user: ModelTypes.UserInstance
     let organization: ModelTypes.OrganizationInstance
@@ -18,7 +18,7 @@ describe('Job test', () => {
         modelsFactory = await initDB()
         deletionRunnerFn = getDeletionRunnerFn(modelsFactory)
 
-        user = await modelsFactory.userModel.create({name: 'user a', username: 'b', password: 'c'})
+        user = await modelsFactory.userModel.create({name: 'user a', username: 'b', password: 'c', email: 'd'})
         organization = await modelsFactory.organizationModel.create({name: 'org b'})
     })
 
