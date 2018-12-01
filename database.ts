@@ -14,7 +14,6 @@ export async function initDB(): Promise<Factory.Models> {
     console.log("DB connection successful")
     
     const modelsFactory = await Factory.default(sequelize)
-   // await sequelize.sync({force: true})
 
     console.log("Sequelize sync successful")
     return modelsFactory
