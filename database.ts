@@ -9,11 +9,18 @@ const sequelize = new Sequelize('postgres://postgres:123@localhost:5432/surveys'
     { dialect: 'postgres' }
 )
 
+let modelsFactory: Factory.Models | null = null
+
 export async function initDB(): Promise<Factory.Models> {
+
+    if (modelsFactory) {
+        return modelsFactory
+    }
+    
     await sequelize.authenticate()
     console.log("DB connection successful")
     
-    const modelsFactory = await Factory.default(sequelize)
+    modelsFactory = await Factory.default(sequelize)
 
     console.log("Sequelize sync successful")
     return modelsFactory

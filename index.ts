@@ -7,21 +7,22 @@ import * as Middleware from './middleware/'
 
 const port = process.env.PORT || 3000
 
-let models: Factory.Models
-let app: Express.Express
-let server: Http.Server
+let initialized = false
 
 export async function init(modelsFactory: Factory.Models) {
 
-    models = modelsFactory
+    if (initialized) {
+        return
+    }
 
     console.log("Done initializing database")
 
-    app = Express();
+    const app = Express();
 
-    server = new Http.Server(app) 
+    const server = new Http.Server(app) 
     server.listen(port)
 
+    initialized = true
     console.log("Started server")
 
     const middleware = new Middleware.Middleware(modelsFactory)
@@ -37,11 +38,12 @@ export async function init(modelsFactory: Factory.Models) {
     app.use(Middleware.Base.errorHandlingFn)
 
     console.log("Done initialzing routes")
-}
 
-export async function stop() {
-    server.close()
-    models.sequelize.close()
+    process.on('exit', () => {
+        server.close()
+        modelsFactory.sequelize.close()
+        initialized = false
+    })
 }
 
 if (require.main === module) {
